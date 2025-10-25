@@ -74,7 +74,10 @@ interface TemplateEditorProps {
   onChange: (updater: (current: TemplateDraft) => TemplateDraft) => void;
 }
 
-function TemplateEditor({ template, onChange }: TemplateEditorProps): JSX.Element {
+function TemplateEditor({
+  template,
+  onChange,
+}: TemplateEditorProps): JSX.Element {
   const normalizedTemplate = useMemo<TemplateSettings>(
     () => ({
       ...template,
@@ -270,7 +273,10 @@ function TemplateEditor({ template, onChange }: TemplateEditorProps): JSX.Elemen
       </div>
 
       <div className="template-editor__preview">
-        <div className="preview-panel preview-panel--query" data-role="query-preview">
+        <div
+          className="preview-panel preview-panel--query"
+          data-role="query-preview"
+        >
           {preview.query}
         </div>
         <div className="preview-panel" data-role="preview">
@@ -430,7 +436,7 @@ function OptionsApp(): JSX.Element {
           const next = normalized.templates.find(
             (template) => template.id === currentId,
           );
-          return next ? next.id : normalized.templates[0]?.id ?? null;
+          return next ? next.id : (normalized.templates[0]?.id ?? null);
         });
         setDirty(false);
         setStatus('保存しました。');
@@ -501,17 +507,25 @@ function OptionsApp(): JSX.Element {
         </header>
 
         {draft ? (
-          <form id="settingsForm" className="options-form" onSubmit={handleSubmit}>
+          <form
+            id="settingsForm"
+            className="options-form"
+            onSubmit={handleSubmit}
+          >
             <div className="options-layout">
               <aside className="options-sidebar">
                 <div className="options-sidebar__intro">
                   <p className="sidebar-caption">Templates</p>
                   <h2>テンプレート一覧</h2>
-                  <p>左のリストから編集したいテンプレートを選択してください。</p>
+                  <p>
+                    左のリストから編集したいテンプレートを選択してください。
+                  </p>
                 </div>
                 <div className="options-sidebar__list">
                   {draft.templates.length === 0 ? (
-                    <p className="options-sidebar__empty">テンプレートがありません。</p>
+                    <p className="options-sidebar__empty">
+                      テンプレートがありません。
+                    </p>
                   ) : (
                     draft.templates.map((template) => {
                       const active = template.id === selectedTemplate?.id;
@@ -551,11 +565,15 @@ function OptionsApp(): JSX.Element {
                   <header className="options-panel__header">
                     <p className="options-panel__caption">General Settings</p>
                     <h2>基本設定</h2>
-                    <p>URL長のハードリミットやメニューの親タイトルを調整します。</p>
+                    <p>
+                      URL長のハードリミットやメニューの親タイトルを調整します。
+                    </p>
                   </header>
                   <div className="options-panel__grid">
                     <label className="options-panel__field">
-                      <span className="field-label">URLハードリミット (文字数)</span>
+                      <span className="field-label">
+                        URLハードリミット (文字数)
+                      </span>
                       <input
                         id="hardLimit"
                         type="number"
@@ -569,7 +587,9 @@ function OptionsApp(): JSX.Element {
                       </span>
                     </label>
                     <label className="options-panel__field">
-                      <span className="field-label">コンテキストメニュー親タイトル</span>
+                      <span className="field-label">
+                        コンテキストメニュー親タイトル
+                      </span>
                       <input
                         id="parentMenuTitle"
                         type="text"
@@ -602,7 +622,9 @@ function OptionsApp(): JSX.Element {
 
                 <div className="options-actions">
                   <div>
-                    <p className="options-actions__title">変更を保存しますか？</p>
+                    <p className="options-actions__title">
+                      変更を保存しますか？
+                    </p>
                     <span className="status-text" id="statusText">
                       {isLoading ? '設定を読み込み中…' : statusText}
                     </span>
@@ -639,9 +661,7 @@ function OptionsApp(): JSX.Element {
                 ? '設定を読み込み中…'
                 : '設定を読み込めませんでした。ページを再読み込みしてください。'}
             </p>
-            {loadingError && (
-              <p className="warning-text">{loadingError}</p>
-            )}
+            {loadingError && <p className="warning-text">{loadingError}</p>}
           </section>
         )}
       </main>
