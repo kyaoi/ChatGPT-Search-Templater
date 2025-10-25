@@ -1,6 +1,11 @@
-import { buildChatGPTUrl } from './lib/urlBuilder.js';
-import { DEFAULT_SETTINGS, ExtensionSettings, TemplateSettings, resolveModelId } from './lib/settings.js';
+import {
+  DEFAULT_SETTINGS,
+  type ExtensionSettings,
+  resolveModelId,
+  type TemplateSettings,
+} from './lib/settings.js';
 import { ensureDefaults, observeSettings } from './lib/storage.js';
+import { buildChatGPTUrl } from './lib/urlBuilder.js';
 
 interface ContextMenuClickInfo {
   menuItemId: string | number;
@@ -92,7 +97,9 @@ function regenerateContextMenus(settings: ExtensionSettings): Promise<void> {
       });
     });
 
-  const createMenu = (options: { id?: string; parentId?: string | number; title?: string; contexts?: string[] }): Promise<void> =>
+  const createMenu = (
+    options: chrome.contextMenus.CreateProperties,
+  ): Promise<void> =>
     new Promise((resolve) => {
       chrome.contextMenus.create(options, () => {
         const error = chrome.runtime?.lastError;
@@ -107,7 +114,7 @@ function regenerateContextMenus(settings: ExtensionSettings): Promise<void> {
     await createMenu({
       id: MENU_PARENT_ID,
       title: settings.parentMenuTitle,
-      contexts: ['selection'],
+      contexts: ['selection'] as [chrome.contextMenus.ContextType],
     });
 
     const templateMenus = settings.templates
@@ -117,7 +124,7 @@ function regenerateContextMenus(settings: ExtensionSettings): Promise<void> {
           id: templateMenuId(template.id),
           parentId: MENU_PARENT_ID,
           title: template.label,
-          contexts: ['selection'],
+          contexts: ['selection'] as [chrome.contextMenus.ContextType],
         }),
       );
 
@@ -127,12 +134,15 @@ function regenerateContextMenus(settings: ExtensionSettings): Promise<void> {
       id: MENU_EDIT_ID,
       parentId: MENU_PARENT_ID,
       title: 'テンプレートを編集…',
-      contexts: ['selection'],
+      contexts: ['selection'] as [chrome.contextMenus.ContextType],
     });
   });
 }
 
-async function showAlertOnTab(tabId: number | undefined, message: string): Promise<void> {
+async function showAlertOnTab(
+  tabId: number | undefined,
+  message: string,
+): Promise<void> {
   if (typeof tabId !== 'number') {
     return;
   }
@@ -141,32 +151,46 @@ async function showAlertOnTab(tabId: number | undefined, message: string): Promi
   });
 }
 
-async function resolveSelectionText(tabId: number | undefined, fallback: string): Promise<string> {
+async function resolveSelectionText(
+  tabId: number | undefined,
+  fallback: string,
+): Promise<string> {
   if (typeof tabId !== 'number') {
     return fallback;
   }
 
   return new Promise((resolve) => {
-    chrome.tabs.sendMessage(tabId, { type: 'get-selection' }, (response?: SelectionResponsePayload) => {
-      const error = chrome.runtime?.lastError;
-      if (error || !response || typeof response.text !== 'string' || response.text.length === 0) {
-        void fetchSelectionViaScripting(tabId)
-          .then((scriptSelection) => {
-            if (scriptSelection && scriptSelection.length > 0) {
-              resolve(scriptSelection);
-            } else {
-              resolve(fallback);
-            }
-          })
-          .catch(() => resolve(fallback));
-        return;
-      }
-      resolve(response.text);
-    });
+    chrome.tabs.sendMessage(
+      tabId,
+      { type: 'get-selection' },
+      (response?: SelectionResponsePayload) => {
+        const error = chrome.runtime?.lastError;
+        if (
+          error ||
+          !response ||
+          typeof response.text !== 'string' ||
+          response.text.length === 0
+        ) {
+          void fetchSelectionViaScripting(tabId)
+            .then((scriptSelection) => {
+              if (scriptSelection && scriptSelection.length > 0) {
+                resolve(scriptSelection);
+              } else {
+                resolve(fallback);
+              }
+            })
+            .catch(() => resolve(fallback));
+          return;
+        }
+        resolve(response.text);
+      },
+    );
   });
 }
 
-async function fetchSelectionViaScripting(tabId: number): Promise<string | null> {
+async function fetchSelectionViaScripting(
+  tabId: number,
+): Promise<string | null> {
   if (!chrome.scripting?.executeScript) {
     return null;
   }
@@ -229,7 +253,10 @@ async function executeTemplate(
   return { success: true };
 }
 
-function findTemplateById(settings: ExtensionSettings, templateId: string): TemplateSettings | undefined {
+function findTemplateById(
+  settings: ExtensionSettings,
+  templateId: string,
+): TemplateSettings | undefined {
   return settings.templates.find((template) => template.id === templateId);
 }
 
@@ -251,50 +278,73 @@ observeSettings((settings) => {
   void enqueueContextMenuUpdate(currentSettings);
 });
 
-chrome.contextMenus.onClicked.addListener((info: ContextMenuClickInfo, tab?: ChromeTab) => {
-  void (async () => {
-    const menuId = String(info.menuItemId);
+chrome.contextMenus.onClicked.addListener(
+  (info: ContextMenuClickInfo, tab?: ChromeTab) => {
+    void (async () => {
+      const menuId = String(info.menuItemId);
 
-    if (menuId === MENU_EDIT_ID) {
-      chrome.runtime.openOptionsPage();
-      return;
+      if (menuId === MENU_EDIT_ID) {
+        chrome.runtime.openOptionsPage();
+        return;
+      }
+
+      const templateId = parseTemplateId(menuId);
+      if (!templateId) {
+        return;
+      }
+
+      const template = findTemplateById(currentSettings, templateId);
+      if (!template) {
+        return;
+      }
+
+      const fallbackText = info.selectionText ?? '';
+      const selectionText = await resolveSelectionText(tab?.id, fallbackText);
+
+      if (!selectionText) {
+        void showAlertOnTab(
+          tab?.id,
+          'テキストを選択してから実行してください。',
+        );
+        return;
+      }
+
+      void executeTemplate(
+        template,
+        selectionText,
+        currentSettings.hardLimit,
+        tab?.id,
+      );
+    })();
+  },
+);
+
+chrome.runtime.onMessage.addListener(
+  (
+    message: RuntimeMessage,
+    sender: RuntimeMessageSender,
+    sendResponse: SendResponse,
+  ) => {
+    if (message?.type === 'execute-template') {
+      const template = findTemplateById(currentSettings, message.templateId);
+      if (!template) {
+        sendResponse({ success: false, reason: 'not-found' });
+        return;
+      }
+
+      const originTabId = sender.tab?.id;
+      executeTemplate(
+        template,
+        message.text,
+        currentSettings.hardLimit,
+        originTabId,
+      )
+        .then((result) => sendResponse(result))
+        .catch(() =>
+          sendResponse({ success: false, reason: 'unexpected-error' }),
+        );
+      return true;
     }
-
-    const templateId = parseTemplateId(menuId);
-    if (!templateId) {
-      return;
-    }
-
-    const template = findTemplateById(currentSettings, templateId);
-    if (!template) {
-      return;
-    }
-
-    const fallbackText = info.selectionText ?? '';
-    const selectionText = await resolveSelectionText(tab?.id, fallbackText);
-
-    if (!selectionText) {
-      void showAlertOnTab(tab?.id, 'テキストを選択してから実行してください。');
-      return;
-    }
-
-    void executeTemplate(template, selectionText, currentSettings.hardLimit, tab?.id);
-  })();
-});
-
-chrome.runtime.onMessage.addListener((message: RuntimeMessage, sender: RuntimeMessageSender, sendResponse: SendResponse) => {
-  if (message?.type === 'execute-template') {
-    const template = findTemplateById(currentSettings, message.templateId);
-    if (!template) {
-      sendResponse({ success: false, reason: 'not-found' });
-      return;
-    }
-
-    const originTabId = sender.tab?.id;
-    executeTemplate(template, message.text, currentSettings.hardLimit, originTabId)
-      .then((result) => sendResponse(result))
-      .catch(() => sendResponse({ success: false, reason: 'unexpected-error' }));
-    return true;
-  }
-  return undefined;
-});
+    return undefined;
+  },
+);

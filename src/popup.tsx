@@ -1,5 +1,11 @@
-import { FormEvent, useCallback, useEffect, useMemo, useState } from 'react';
 import type { JSX } from 'react';
+import {
+  type FormEvent,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react';
 import { createRoot } from 'react-dom/client';
 import { loadSettings } from './lib/storage.js';
 
@@ -13,7 +19,10 @@ interface ExecuteTemplateResponse {
   reason?: 'hard-limit-exceeded' | 'not-found' | string;
 }
 
-function executeTemplate(templateId: string, text: string): Promise<ExecuteTemplateResponse> {
+function executeTemplate(
+  templateId: string,
+  text: string,
+): Promise<ExecuteTemplateResponse> {
   return new Promise((resolve, reject) => {
     chrome.runtime.sendMessage(
       {
@@ -52,7 +61,9 @@ function PopupApp(): JSX.Element {
           .filter((template) => template.enabled)
           .map((template) => ({ id: template.id, label: template.label }));
         setTemplates(enabledTemplates);
-        setSelectedTemplateId((current) => current || enabledTemplates[0]?.id || '');
+        setSelectedTemplateId(
+          (current) => current || enabledTemplates[0]?.id || '',
+        );
       })
       .catch((error) => {
         console.error(error);
@@ -79,7 +90,9 @@ function PopupApp(): JSX.Element {
       setStatusMessage('');
 
       if (!selectedTemplateId) {
-        setStatusMessage('テンプレートが選択できません。オプションから有効化してください。');
+        setStatusMessage(
+          'テンプレートが選択できません。オプションから有効化してください。',
+        );
         return;
       }
 
@@ -122,8 +135,12 @@ function PopupApp(): JSX.Element {
       <main className="surface-card relative w-[360px] max-w-full overflow-hidden px-5 pb-6 pt-5">
         <section className="gradient-header mb-6 rounded-2xl px-5 pb-6 pt-5">
           <div className="relative z-10 flex flex-col gap-3">
-            <span className="chip w-fit bg-white/25 text-white/80">Quick Prompt</span>
-            <h1 className="text-2xl font-semibold tracking-tight">ChatGPT Search</h1>
+            <span className="chip w-fit bg-white/25 text-white/80">
+              Quick Prompt
+            </span>
+            <h1 className="text-2xl font-semibold tracking-tight">
+              ChatGPT Search
+            </h1>
             <p className="text-sm text-white/70">
               選択テキストを即座にテンプレートへ差し込み、洗練されたプロンプトでChatGPTを呼び出します。
             </p>
@@ -170,10 +187,18 @@ function PopupApp(): JSX.Element {
           </div>
 
           <div className="flex flex-col gap-3">
-            <button type="submit" className="btn-primary w-full" disabled={isSubmitting || !hasTemplates}>
+            <button
+              type="submit"
+              className="btn-primary w-full"
+              disabled={isSubmitting || !hasTemplates}
+            >
               <span>{isSubmitting ? '送信中…' : 'ChatGPT を開く'}</span>
             </button>
-            <button type="button" className="btn-secondary w-full" onClick={handleOpenOptions}>
+            <button
+              type="button"
+              className="btn-secondary w-full"
+              onClick={handleOpenOptions}
+            >
               <span>テンプレートを編集</span>
             </button>
           </div>

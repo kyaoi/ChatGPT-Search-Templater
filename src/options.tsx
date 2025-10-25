@@ -1,28 +1,28 @@
+import type { JSX } from 'react';
 import {
-  ChangeEvent,
-  FormEvent,
+  type ChangeEvent,
+  type FormEvent,
   useCallback,
   useEffect,
   useMemo,
   useState,
-} from "react";
-import type { JSX } from "react";
-import { createRoot } from "react-dom/client";
-import { buildChatGPTUrl } from "./lib/urlBuilder.js";
+} from 'react';
+import { createRoot } from 'react-dom/client';
 import {
-  DEFAULT_SETTINGS,
-  ExtensionSettings,
-  TemplateModelOption,
-  TemplateSettings,
   collectTemplateWarnings,
+  DEFAULT_SETTINGS,
+  type ExtensionSettings,
   normalizeSettings,
   resolveModelId,
-} from "./lib/settings.js";
-import { loadSettings, saveSettings } from "./lib/storage.js";
+  type TemplateModelOption,
+  type TemplateSettings,
+} from './lib/settings.js';
+import { loadSettings, saveSettings } from './lib/storage.js';
+import { buildChatGPTUrl } from './lib/urlBuilder.js';
 
-const SAMPLE_TEXT = "日本の大規模言語モデル事情";
+const SAMPLE_TEXT = '日本の大規模言語モデル事情';
 
-type TemplateDraft = Omit<TemplateSettings, "customModel"> & {
+type TemplateDraft = Omit<TemplateSettings, 'customModel'> & {
   customModel: string;
 };
 
@@ -38,7 +38,7 @@ function toDraft(settings: ExtensionSettings): SettingsDraft {
     parentMenuTitle: settings.parentMenuTitle,
     templates: settings.templates.map((template) => ({
       ...template,
-      customModel: template.customModel ?? "",
+      customModel: template.customModel ?? '',
     })),
   };
 }
@@ -112,7 +112,7 @@ function TemplateCard({ template, onChange }: TemplateCardProps): JSX.Element {
   );
 
   const handleCheckboxChange = useCallback(
-    (key: "enabled" | "hintsSearch" | "temporaryChat") =>
+    (key: 'enabled' | 'hintsSearch' | 'temporaryChat') =>
       (event: ChangeEvent<HTMLInputElement>) => {
         const checked = event.target.checked;
         onChange((current) => ({
@@ -123,7 +123,7 @@ function TemplateCard({ template, onChange }: TemplateCardProps): JSX.Element {
     [onChange],
   );
 
-  const showCustomModel = template.model === "custom";
+  const showCustomModel = template.model === 'custom';
 
   return (
     <article
@@ -137,14 +137,14 @@ function TemplateCard({ template, onChange }: TemplateCardProps): JSX.Element {
             data-field="enabled"
             className="h-4 w-4 accent-primary"
             checked={template.enabled}
-            onChange={handleCheckboxChange("enabled")}
+            onChange={handleCheckboxChange('enabled')}
           />
           <span className="font-medium text-slate-700">有効にする</span>
         </label>
         <div className="space-y-2">
-          <label className="field-label" data-role="template-heading">
+          <p className="field-label" data-role="template-heading">
             メニュー表示名
-          </label>
+          </p>
           <input
             type="text"
             data-field="label"
@@ -187,7 +187,7 @@ function TemplateCard({ template, onChange }: TemplateCardProps): JSX.Element {
           <textarea
             data-field="queryTemplate"
             className="input-field min-h-32"
-            placeholder={"以下の文章を日本語に直してください。\n\n{TEXT}"}
+            placeholder={'以下の文章を日本語に直してください。\n\n{TEXT}'}
             value={template.queryTemplate}
             onChange={(event) =>
               onChange((current) => ({
@@ -208,7 +208,7 @@ function TemplateCard({ template, onChange }: TemplateCardProps): JSX.Element {
               data-field="hintsSearch"
               className="h-4 w-4 accent-primary"
               checked={template.hintsSearch}
-              onChange={handleCheckboxChange("hintsSearch")}
+              onChange={handleCheckboxChange('hintsSearch')}
             />
             <span>Searchヒント（hints=search）</span>
           </label>
@@ -218,7 +218,7 @@ function TemplateCard({ template, onChange }: TemplateCardProps): JSX.Element {
               data-field="temporaryChat"
               className="h-4 w-4 accent-primary"
               checked={template.temporaryChat}
-              onChange={handleCheckboxChange("temporaryChat")}
+              onChange={handleCheckboxChange('temporaryChat')}
             />
             <span>一時チャット（temporary-chat=true）</span>
           </label>
@@ -246,7 +246,7 @@ function TemplateCard({ template, onChange }: TemplateCardProps): JSX.Element {
             </select>
           </label>
           <label
-            className={`flex flex-col gap-2 ${showCustomModel ? "" : "hidden"}`}
+            className={`flex flex-col gap-2 ${showCustomModel ? '' : 'hidden'}`}
             data-role="custom-model"
           >
             <span className="field-label">カスタムモデル名</span>
@@ -278,7 +278,7 @@ function TemplateCard({ template, onChange }: TemplateCardProps): JSX.Element {
           {preview.url}
         </div>
         <p className="warning-text" data-role="warning">
-          {warnings.join(" ")}
+          {warnings.join(' ')}
         </p>
       </div>
     </article>
@@ -291,7 +291,7 @@ function OptionsApp(): JSX.Element {
   const [isSaving, setIsSaving] = useState(false);
   const [isResetting, setIsResetting] = useState(false);
   const [dirty, setDirty] = useState(false);
-  const [status, setStatus] = useState("");
+  const [status, setStatus] = useState('');
   const [loadingError, setLoadingError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -303,13 +303,13 @@ function OptionsApp(): JSX.Element {
         }
         setDraft(toDraft(settings));
         setDirty(false);
-        setStatus("");
+        setStatus('');
         setLoadingError(null);
       })
       .catch((error) => {
         console.error(error);
         if (mounted) {
-          setLoadingError("設定の読み込みに失敗しました。");
+          setLoadingError('設定の読み込みに失敗しました。');
         }
       })
       .finally(() => {
@@ -324,7 +324,7 @@ function OptionsApp(): JSX.Element {
 
   const markDirty = useCallback(() => {
     setDirty(true);
-    setStatus("");
+    setStatus('');
   }, []);
 
   const handleHardLimitChange = useCallback(
@@ -385,7 +385,7 @@ function OptionsApp(): JSX.Element {
 
       if (hasPlaceholderWarning) {
         const proceed = window.confirm(
-          "プレースホルダを含まないテンプレートがあります。このまま保存してもよろしいですか？",
+          'プレースホルダを含まないテンプレートがあります。このまま保存してもよろしいですか？',
         );
         if (!proceed) {
           return;
@@ -397,11 +397,11 @@ function OptionsApp(): JSX.Element {
         await saveSettings(normalized);
         setDraft(toDraft(normalized));
         setDirty(false);
-        setStatus("保存しました。");
+        setStatus('保存しました。');
         setLoadingError(null);
       } catch (error) {
         console.error(error);
-        window.alert("保存に失敗しました。もう一度お試しください。");
+        window.alert('保存に失敗しました。もう一度お試しください。');
       } finally {
         setIsSaving(false);
       }
@@ -414,7 +414,7 @@ function OptionsApp(): JSX.Element {
       return;
     }
     const confirmed = window.confirm(
-      "初期設定に戻しますか？保存されているテンプレートは上書きされます。",
+      '初期設定に戻しますか？保存されているテンプレートは上書きされます。',
     );
     if (!confirmed) {
       return;
@@ -426,18 +426,18 @@ function OptionsApp(): JSX.Element {
       await saveSettings(defaults);
       setDraft(toDraft(defaults));
       setDirty(false);
-      setStatus("初期設定に戻しました。");
+      setStatus('初期設定に戻しました。');
       setLoadingError(null);
     } catch (error) {
       console.error(error);
-      window.alert("初期設定へのリセットに失敗しました。");
+      window.alert('初期設定へのリセットに失敗しました。');
     } finally {
       setIsResetting(false);
     }
   }, [draft]);
 
   const statusText =
-    loadingError ?? (dirty ? "未保存の変更があります。" : status);
+    loadingError ?? (dirty ? '未保存の変更があります。' : status);
 
   return (
     <div className="min-h-screen bg-surface/60 text-slate-900">
@@ -564,7 +564,7 @@ function OptionsApp(): JSX.Element {
                   変更を保存しますか？
                 </p>
                 <span className="status-text" id="statusText">
-                  {isLoading ? "設定を読み込み中…" : statusText}
+                  {isLoading ? '設定を読み込み中…' : statusText}
                 </span>
               </div>
               <div className="flex flex-col gap-3 md:flex-row">
@@ -577,7 +577,7 @@ function OptionsApp(): JSX.Element {
                   }}
                   disabled={isSaving || isResetting}
                 >
-                  {isResetting ? "リセット中…" : "初期設定に戻す"}
+                  {isResetting ? 'リセット中…' : '初期設定に戻す'}
                 </button>
                 <button
                   type="submit"
@@ -585,7 +585,7 @@ function OptionsApp(): JSX.Element {
                   id="saveButton"
                   disabled={isSaving}
                 >
-                  {isSaving ? "保存中…" : "保存する"}
+                  {isSaving ? '保存中…' : '保存する'}
                 </button>
               </div>
             </div>
@@ -594,8 +594,8 @@ function OptionsApp(): JSX.Element {
           <section className="surface-card mt-10 flex flex-col gap-4 px-7 py-8 text-sm text-slate-600">
             <p>
               {isLoading
-                ? "設定を読み込み中…"
-                : "設定を読み込めませんでした。ページを再読み込みしてください。"}
+                ? '設定を読み込み中…'
+                : '設定を読み込めませんでした。ページを再読み込みしてください。'}
             </p>
             {loadingError && (
               <p className="warning-text text-sm">{loadingError}</p>
@@ -608,7 +608,7 @@ function OptionsApp(): JSX.Element {
 }
 
 function bootstrap(): void {
-  const container = document.getElementById("root");
+  const container = document.getElementById('root');
   if (!container) {
     return;
   }
@@ -616,4 +616,4 @@ function bootstrap(): void {
   root.render(<OptionsApp />);
 }
 
-document.addEventListener("DOMContentLoaded", bootstrap);
+document.addEventListener('DOMContentLoaded', bootstrap);

@@ -24,7 +24,10 @@ export interface BuildChatGPTUrlResult {
   encodedQuery: string;
 }
 
-function maskLiteralPlaceholders(template: string): { masked: string; restore: (value: string) => string } {
+function maskLiteralPlaceholders(template: string): {
+  masked: string;
+  restore: (value: string) => string;
+} {
   const tokens: string[] = [];
   let masked = template;
 
@@ -49,7 +52,10 @@ function maskLiteralPlaceholders(template: string): { masked: string; restore: (
   };
 }
 
-export function applyPlaceholders(template: string, replacement: string): string {
+export function applyPlaceholders(
+  template: string,
+  replacement: string,
+): string {
   const { masked, restore } = maskLiteralPlaceholders(template);
 
   const substituted = PLACEHOLDER_VARIANTS.reduce(
@@ -70,17 +76,24 @@ export function hasPlaceholder(value: string): boolean {
       if (!isEscaped) {
         return true;
       }
-      searchStart = value.indexOf(placeholder, searchStart + placeholder.length);
+      searchStart = value.indexOf(
+        placeholder,
+        searchStart + placeholder.length,
+      );
     }
     return false;
   });
 }
 
-export function buildChatGPTUrl(params: BuildChatGPTUrlParams): BuildChatGPTUrlResult {
+export function buildChatGPTUrl(
+  params: BuildChatGPTUrlParams,
+): BuildChatGPTUrlResult {
   const { templateUrl, queryTemplate, rawText, runtimeOptions } = params;
 
-  const baseTemplate = templateUrl.trim().length > 0 ? templateUrl.trim() : DEFAULT_TEMPLATE_URL;
-  const baseQueryTemplate = queryTemplate.trim().length > 0 ? queryTemplate : DEFAULT_QUERY_TEMPLATE;
+  const baseTemplate =
+    templateUrl.trim().length > 0 ? templateUrl.trim() : DEFAULT_TEMPLATE_URL;
+  const baseQueryTemplate =
+    queryTemplate.trim().length > 0 ? queryTemplate : DEFAULT_QUERY_TEMPLATE;
 
   const preparedQuery = applyPlaceholders(baseQueryTemplate, rawText);
   const encodedQuery = encodeURIComponent(preparedQuery);

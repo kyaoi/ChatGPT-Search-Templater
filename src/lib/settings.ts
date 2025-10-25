@@ -1,4 +1,8 @@
-import { DEFAULT_TEMPLATE_URL, DEFAULT_QUERY_TEMPLATE, hasPlaceholder } from './urlBuilder.js';
+import {
+  DEFAULT_QUERY_TEMPLATE,
+  DEFAULT_TEMPLATE_URL,
+  hasPlaceholder,
+} from './urlBuilder.js';
 
 export type TemplateModelOption = 'gpt-4o' | 'o3' | 'gpt-5' | 'custom';
 
@@ -54,21 +58,31 @@ export const DEFAULT_SETTINGS: ExtensionSettings = {
   parentMenuTitle: DEFAULT_PARENT_MENU_TITLE,
 };
 
-export function getTemplateById(templates: TemplateSettings[], id: string): TemplateSettings | undefined {
+export function getTemplateById(
+  templates: TemplateSettings[],
+  id: string,
+): TemplateSettings | undefined {
   return templates.find((template) => template.id === id);
 }
 
-export function ensureTemplateCount(templates: TemplateSettings[]): TemplateSettings[] {
+export function ensureTemplateCount(
+  templates: TemplateSettings[],
+): TemplateSettings[] {
   const normalized: TemplateSettings[] = [];
 
   TEMPLATE_IDS.forEach((templateId, index) => {
     const source = templates[index];
     if (source) {
       normalized.push(enrichTemplate(source, templateId, index));
-    } else {
-      const fallback = (DEFAULT_TEMPLATES[index] ?? DEFAULT_TEMPLATES[0])!;
-      normalized.push({ ...fallback });
+      return;
     }
+
+    const fallback = DEFAULT_TEMPLATES[index] ?? DEFAULT_TEMPLATES[0];
+    if (!fallback) {
+      throw new Error('default template is not defined');
+    }
+
+    normalized.push({ ...fallback });
   });
 
   return normalized;
@@ -79,11 +93,17 @@ export function enrichTemplate(
   fallbackId: string,
   index: number,
 ): TemplateSettings {
-  const defaults = (DEFAULT_TEMPLATES[index] ?? DEFAULT_TEMPLATES[0])!;
+  const defaults = DEFAULT_TEMPLATES[index] ?? DEFAULT_TEMPLATES[0];
+  if (!defaults) {
+    throw new Error('default template is not defined');
+  }
 
   return {
     id: template.id ?? fallbackId,
-    label: template.label && template.label.trim().length > 0 ? template.label : defaults.label,
+    label:
+      template.label && template.label.trim().length > 0
+        ? template.label
+        : defaults.label,
     url: template.url ?? defaults.url,
     queryTemplate: template.queryTemplate ?? defaults.queryTemplate,
     enabled: template.enabled ?? defaults.enabled,
@@ -94,9 +114,13 @@ export function enrichTemplate(
   };
 }
 
-export function normalizeSettings(raw: Partial<ExtensionSettings> | undefined): ExtensionSettings {
+export function normalizeSettings(
+  raw: Partial<ExtensionSettings> | undefined,
+): ExtensionSettings {
   const rawHardLimit =
-    typeof raw?.hardLimit === 'number' && Number.isFinite(raw.hardLimit) ? raw.hardLimit : DEFAULT_HARD_LIMIT;
+    typeof raw?.hardLimit === 'number' && Number.isFinite(raw.hardLimit)
+      ? raw.hardLimit
+      : DEFAULT_HARD_LIMIT;
   const hardLimit = Math.max(100, rawHardLimit);
   const parentMenuTitle =
     raw?.parentMenuTitle && raw.parentMenuTitle.trim().length > 0
@@ -114,7 +138,9 @@ export function normalizeSettings(raw: Partial<ExtensionSettings> | undefined): 
 
 export function resolveModelId(template: TemplateSettings): string | undefined {
   if (template.model === 'custom') {
-    return template.customModel?.trim().length ? template.customModel.trim() : undefined;
+    return template.customModel?.trim().length
+      ? template.customModel.trim()
+      : undefined;
   }
   return template.model;
 }
@@ -122,10 +148,13 @@ export function resolveModelId(template: TemplateSettings): string | undefined {
 export function collectTemplateWarnings(template: TemplateSettings): string[] {
   const warnings: string[] = [];
 
-  const hasEffectivePlaceholder = hasPlaceholder(template.url) || hasPlaceholder(template.queryTemplate);
+  const hasEffectivePlaceholder =
+    hasPlaceholder(template.url) || hasPlaceholder(template.queryTemplate);
 
   if (!hasEffectivePlaceholder) {
-    warnings.push('プレースホルダ（{TEXT} または {選択した文字列}）がテンプレートに含まれていません。');
+    warnings.push(
+      'プレースホルダ（{TEXT} または {選択した文字列}）がテンプレートに含まれていません。',
+    );
   }
 
   return warnings;

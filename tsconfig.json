@@ -16,7 +16,8 @@
     "resolveJsonModule": false,
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "types": ["chrome"]
   },
   "include": ["src/**/*.ts", "src/**/*.tsx"]
 }
