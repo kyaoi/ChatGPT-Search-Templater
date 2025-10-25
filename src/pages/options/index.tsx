@@ -16,9 +16,9 @@ import {
   resolveModelId,
   type TemplateModelOption,
   type TemplateSettings,
-} from './lib/settings.js';
-import { loadSettings, saveSettings } from './lib/storage.js';
-import { buildChatGPTUrl } from './lib/urlBuilder.js';
+} from '../../lib/settings.js';
+import { loadSettings, saveSettings } from '../../lib/storage.js';
+import { buildChatGPTUrl } from '../../lib/urlBuilder.js';
 
 const SAMPLE_TEXT = '日本の大規模言語モデル事情';
 

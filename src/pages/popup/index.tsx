@@ -7,7 +7,7 @@ import {
   useState,
 } from 'react';
 import { createRoot } from 'react-dom/client';
-import { loadSettings } from './lib/storage.js';
+import { loadSettings } from '../../lib/storage.js';
 
 interface TemplateOption {
   id: string;

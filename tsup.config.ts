@@ -2,10 +2,10 @@ import { defineConfig } from 'tsup';
 
 export default defineConfig({
   entry: {
-    background: 'src/background.ts',
-    'content-script': 'src/content-script.ts',
-    options: 'src/options.tsx',
-    popup: 'src/popup.tsx',
+    background: 'src/background/index.ts',
+    'content-script': 'src/content-script/index.ts',
+    options: 'src/pages/options/index.tsx',
+    popup: 'src/pages/popup/index.tsx',
   },
   format: ['esm'],
   target: 'es2021',
