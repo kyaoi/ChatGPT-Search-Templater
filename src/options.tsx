@@ -69,12 +69,12 @@ function fromDraft(draft: SettingsDraft): ExtensionSettings {
   return normalizeSettings(base);
 }
 
-interface TemplateCardProps {
+interface TemplateEditorProps {
   template: TemplateDraft;
   onChange: (updater: (current: TemplateDraft) => TemplateDraft) => void;
 }
 
-function TemplateCard({ template, onChange }: TemplateCardProps): JSX.Element {
+function TemplateEditor({ template, onChange }: TemplateEditorProps): JSX.Element {
   const normalizedTemplate = useMemo<TemplateSettings>(
     () => ({
       ...template,
@@ -126,12 +126,15 @@ function TemplateCard({ template, onChange }: TemplateCardProps): JSX.Element {
   const showCustomModel = template.model === 'custom';
 
   return (
-    <article
-      className="template-card surface-section flex flex-col gap-6 px-6 py-6"
-      data-template-id={template.id}
-    >
-      <header className="flex flex-col gap-4">
-        <label className="switch-control">
+    <section className="template-editor" data-template-id={template.id}>
+      <header className="template-editor__header">
+        <div>
+          <p className="template-editor__caption">テンプレート詳細</p>
+          <h3 className="template-editor__title">
+            {template.label || '未命名テンプレート'}
+          </h3>
+        </div>
+        <label className="switch-control template-editor__toggle">
           <input
             type="checkbox"
             data-field="enabled"
@@ -139,12 +142,13 @@ function TemplateCard({ template, onChange }: TemplateCardProps): JSX.Element {
             checked={template.enabled}
             onChange={handleCheckboxChange('enabled')}
           />
-          <span className="font-medium text-slate-700">有効にする</span>
+          <span className="font-medium text-slate-100">有効</span>
         </label>
-        <div className="space-y-2">
-          <p className="field-label" data-role="template-heading">
-            メニュー表示名
-          </p>
+      </header>
+
+      <div className="template-editor__section">
+        <label className="template-editor__field">
+          <span className="field-label">メニュー表示名</span>
           <input
             type="text"
             data-field="label"
@@ -158,14 +162,12 @@ function TemplateCard({ template, onChange }: TemplateCardProps): JSX.Element {
               }))
             }
           />
-          <small className="text-xs text-slate-400">
+          <small className="template-editor__hint">
             コンテキストメニューに表示されます。
           </small>
-        </div>
-      </header>
+        </label>
 
-      <div className="space-y-4">
-        <label className="flex flex-col gap-2">
+        <label className="template-editor__field">
           <span className="field-label">テンプレートURL</span>
           <input
             type="text"
@@ -182,7 +184,7 @@ function TemplateCard({ template, onChange }: TemplateCardProps): JSX.Element {
           />
         </label>
 
-        <label className="flex flex-col gap-2">
+        <label className="template-editor__field">
           <span className="field-label">検索内容テンプレート</span>
           <textarea
             data-field="queryTemplate"
@@ -196,82 +198,79 @@ function TemplateCard({ template, onChange }: TemplateCardProps): JSX.Element {
               }))
             }
           />
-          <small className="text-xs text-slate-400">
+          <small className="template-editor__hint">
             {`{TEXT} / {選択した文字列} が選択テキストに置き換わります。リテラル {TEXT} を表示したい場合は {{TEXT}} と入力してください。`}
           </small>
         </label>
-
-        <div className="grid gap-4 md:grid-cols-2">
-          <label className="switch-control">
-            <input
-              type="checkbox"
-              data-field="hintsSearch"
-              className="h-4 w-4 accent-primary"
-              checked={template.hintsSearch}
-              onChange={handleCheckboxChange('hintsSearch')}
-            />
-            <span>Searchヒント（hints=search）</span>
-          </label>
-          <label className="switch-control">
-            <input
-              type="checkbox"
-              data-field="temporaryChat"
-              className="h-4 w-4 accent-primary"
-              checked={template.temporaryChat}
-              onChange={handleCheckboxChange('temporaryChat')}
-            />
-            <span>一時チャット（temporary-chat=true）</span>
-          </label>
-        </div>
-
-        <div className="grid gap-4 md:grid-cols-2">
-          <label className="flex flex-col gap-2">
-            <span className="field-label">モデル</span>
-            <select
-              data-field="model"
-              className="input-field"
-              value={template.model}
-              onChange={(event) => {
-                const value = event.target.value as TemplateModelOption;
-                onChange((current) => ({
-                  ...current,
-                  model: value,
-                }));
-              }}
-            >
-              <option value="gpt-4o">gpt-4o</option>
-              <option value="o3">o3</option>
-              <option value="gpt-5">gpt-5</option>
-              <option value="custom">カスタム</option>
-            </select>
-          </label>
-          <label
-            className={`flex flex-col gap-2 ${showCustomModel ? '' : 'hidden'}`}
-            data-role="custom-model"
-          >
-            <span className="field-label">カスタムモデル名</span>
-            <input
-              type="text"
-              data-field="customModel"
-              className="input-field"
-              placeholder="custom-model-id"
-              value={template.customModel}
-              onChange={(event) =>
-                onChange((current) => ({
-                  ...current,
-                  customModel: event.target.value,
-                }))
-              }
-            />
-          </label>
-        </div>
       </div>
 
-      <div className="space-y-3">
-        <div
-          className="preview-panel preview-panel--query"
-          data-role="query-preview"
+      <div className="template-editor__section template-editor__section--grid">
+        <label className="switch-control">
+          <input
+            type="checkbox"
+            data-field="hintsSearch"
+            className="h-4 w-4 accent-primary"
+            checked={template.hintsSearch}
+            onChange={handleCheckboxChange('hintsSearch')}
+          />
+          <span>Searchヒント（hints=search）</span>
+        </label>
+        <label className="switch-control">
+          <input
+            type="checkbox"
+            data-field="temporaryChat"
+            className="h-4 w-4 accent-primary"
+            checked={template.temporaryChat}
+            onChange={handleCheckboxChange('temporaryChat')}
+          />
+          <span>一時チャット（temporary-chat=true）</span>
+        </label>
+      </div>
+
+      <div className="template-editor__section template-editor__section--grid">
+        <label className="template-editor__field">
+          <span className="field-label">モデル</span>
+          <select
+            data-field="model"
+            className="input-field"
+            value={template.model}
+            onChange={(event) => {
+              const value = event.target.value as TemplateModelOption;
+              onChange((current) => ({
+                ...current,
+                model: value,
+              }));
+            }}
+          >
+            <option value="gpt-4o">gpt-4o</option>
+            <option value="o3">o3</option>
+            <option value="gpt-5">gpt-5</option>
+            <option value="custom">カスタム</option>
+          </select>
+        </label>
+        <label
+          className={`template-editor__field ${showCustomModel ? '' : 'hidden'}`}
+          data-role="custom-model"
         >
+          <span className="field-label">カスタムモデル名</span>
+          <input
+            type="text"
+            data-field="customModel"
+            className="input-field"
+            placeholder="custom-model-id"
+            value={template.customModel}
+            onChange={(event) =>
+              onChange((current) => ({
+                ...current,
+                customModel: event.target.value,
+              }))
+            }
+          />
+        </label>
+      </div>
+
+      <div className="template-editor__preview">
+        <div className="preview-panel preview-panel--query" data-role="query-preview">
           {preview.query}
         </div>
         <div className="preview-panel" data-role="preview">
@@ -281,7 +280,7 @@ function TemplateCard({ template, onChange }: TemplateCardProps): JSX.Element {
           {warnings.join(' ')}
         </p>
       </div>
-    </article>
+    </section>
   );
 }
 
@@ -293,6 +292,9 @@ function OptionsApp(): JSX.Element {
   const [dirty, setDirty] = useState(false);
   const [status, setStatus] = useState('');
   const [loadingError, setLoadingError] = useState<string | null>(null);
+  const [selectedTemplateId, setSelectedTemplateId] = useState<string | null>(
+    null,
+  );
 
   useEffect(() => {
     let mounted = true;
@@ -302,6 +304,7 @@ function OptionsApp(): JSX.Element {
           return;
         }
         setDraft(toDraft(settings));
+        setSelectedTemplateId(settings.templates[0]?.id ?? null);
         setDirty(false);
         setStatus('');
         setLoadingError(null);
@@ -322,10 +325,32 @@ function OptionsApp(): JSX.Element {
     };
   }, []);
 
+  useEffect(() => {
+    if (!draft) {
+      return;
+    }
+    const hasSelected = draft.templates.some(
+      (template) => template.id === selectedTemplateId,
+    );
+    if (!hasSelected) {
+      setSelectedTemplateId(draft.templates[0]?.id ?? null);
+    }
+  }, [draft, selectedTemplateId]);
+
   const markDirty = useCallback(() => {
     setDirty(true);
     setStatus('');
   }, []);
+
+  const selectedTemplate = useMemo(() => {
+    if (!draft) {
+      return null;
+    }
+    return (
+      draft.templates.find((template) => template.id === selectedTemplateId) ??
+      null
+    );
+  }, [draft, selectedTemplateId]);
 
   const handleHardLimitChange = useCallback(
     (event: ChangeEvent<HTMLInputElement>) => {
@@ -371,6 +396,11 @@ function OptionsApp(): JSX.Element {
     [markDirty],
   );
 
+  const handleTemplateSelect = useCallback((templateId: string) => {
+    setSelectedTemplateId(templateId);
+    setStatus('');
+  }, []);
+
   const handleSubmit = useCallback(
     async (event: FormEvent<HTMLFormElement>) => {
       event.preventDefault();
@@ -396,6 +426,12 @@ function OptionsApp(): JSX.Element {
       try {
         await saveSettings(normalized);
         setDraft(toDraft(normalized));
+        setSelectedTemplateId((currentId) => {
+          const next = normalized.templates.find(
+            (template) => template.id === currentId,
+          );
+          return next ? next.id : normalized.templates[0]?.id ?? null;
+        });
         setDirty(false);
         setStatus('保存しました。');
         setLoadingError(null);
@@ -425,6 +461,7 @@ function OptionsApp(): JSX.Element {
       const defaults = normalizeSettings(DEFAULT_SETTINGS);
       await saveSettings(defaults);
       setDraft(toDraft(defaults));
+      setSelectedTemplateId(defaults.templates[0]?.id ?? null);
       setDirty(false);
       setStatus('初期設定に戻しました。');
       setLoadingError(null);
@@ -440,165 +477,170 @@ function OptionsApp(): JSX.Element {
     loadingError ?? (dirty ? '未保存の変更があります。' : status);
 
   return (
-    <div className="min-h-screen bg-surface/60 text-slate-900">
-      <main className="mx-auto max-w-6xl px-6 py-12 lg:py-16">
-        <header className="gradient-header overflow-hidden px-8 py-10">
-          <div className="relative z-10 flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
-            <div className="max-w-3xl space-y-4">
-              <span className="chip bg-white/25 text-white/80">Settings</span>
-              <h1 className="text-3xl font-semibold tracking-tight lg:text-4xl">
-                ChatGPT Search Templater
-              </h1>
-              <p className="max-w-2xl text-sm leading-relaxed text-white/80">
-                プロンプトテンプレートと検索フローを一括管理。カスタムモデルやクエリのプレビューを確認しながら、
-                自分好みのChatGPT体験をデザインできます。
-              </p>
-            </div>
-            <div className="glass-highlight rounded-2xl px-6 py-5 text-sm text-white/80">
-              <p className="font-medium text-white">ヒント</p>
-              <ul className="mt-3 space-y-2">
-                <li className="flex items-start gap-2">
-                  <span className="mt-1 h-2 w-2 rounded-full bg-white/70"></span>
-                  <span>
-                    テンプレートはオン・オフを切り替えつつプレビューで即確認できます。
-                  </span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="mt-1 h-2 w-2 rounded-full bg-white/70"></span>
-                  <span>
-                    「検索ヒント」「一時チャット」を組み合わせると、最新ChatGPTの検索挙動を最適化できます。
-                  </span>
-                </li>
-              </ul>
-            </div>
+    <div className="options-wrapper">
+      <main className="options-container">
+        <header className="options-hero">
+          <div className="options-hero__content">
+            <span className="chip chip--ghost">Settings</span>
+            <h1>ChatGPT Search Templater</h1>
+            <p>
+              プロンプトテンプレートと検索フローを一括管理。カスタムモデルやクエリのプレビューを確認しながら、自分好みのChatGPT体験をデザインできます。
+            </p>
+          </div>
+          <div className="options-hero__tips">
+            <p className="options-hero__tips-title">ヒント</p>
+            <ul>
+              <li>
+                テンプレートはオン・オフを切り替えつつプレビューで即確認できます。
+              </li>
+              <li>
+                「検索ヒント」「一時チャット」を組み合わせると、最新ChatGPTの検索挙動を最適化できます。
+              </li>
+            </ul>
           </div>
         </header>
 
         {draft ? (
-          <form
-            id="settingsForm"
-            className="mt-10 flex flex-col gap-10"
-            onSubmit={handleSubmit}
-          >
-            <section className="surface-card px-7 py-8">
-              <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
-                <div className="space-y-2">
-                  <p className="section-title">General Settings</p>
-                  <h2 className="text-xl font-semibold">基本設定</h2>
-                  <p className="text-sm text-slate-500">
-                    URL長のハードリミットやメニューの親タイトルを調整します。
+          <form id="settingsForm" className="options-form" onSubmit={handleSubmit}>
+            <div className="options-layout">
+              <aside className="options-sidebar">
+                <div className="options-sidebar__intro">
+                  <p className="sidebar-caption">Templates</p>
+                  <h2>テンプレート一覧</h2>
+                  <p>左のリストから編集したいテンプレートを選択してください。</p>
+                </div>
+                <div className="options-sidebar__list">
+                  {draft.templates.length === 0 ? (
+                    <p className="options-sidebar__empty">テンプレートがありません。</p>
+                  ) : (
+                    draft.templates.map((template) => {
+                      const active = template.id === selectedTemplate?.id;
+                      return (
+                        <button
+                          type="button"
+                          key={template.id}
+                          className={`options-sidebar__item ${
+                            active ? 'is-active' : ''
+                          }`}
+                          onClick={() => handleTemplateSelect(template.id)}
+                        >
+                          <span className="options-sidebar__item-label">
+                            {template.label || '未命名テンプレート'}
+                          </span>
+                          <span
+                            className={`options-sidebar__badge ${
+                              template.enabled ? 'is-on' : 'is-off'
+                            }`}
+                          >
+                            {template.enabled ? 'ON' : 'OFF'}
+                          </span>
+                        </button>
+                      );
+                    })
+                  )}
+                </div>
+                <div className="options-sidebar__note">
+                  <p>
+                    テンプレートの保存内容は即時反映されます。ブラウザの再読み込みは不要です。
                   </p>
                 </div>
-                <div className="glass-highlight rounded-xl px-4 py-3 text-sm text-white/80 md:w-64">
-                  <p className="font-medium text-white">現在の状況</p>
-                  <div className="mt-2 space-y-1 text-[13px]">
-                    <p>テンプレート保存は即時反映されます。</p>
-                    <p>Chrome 拡張のリロードは不要です。</p>
+              </aside>
+
+              <div className="options-main">
+                <section className="options-panel options-panel--general">
+                  <header className="options-panel__header">
+                    <p className="options-panel__caption">General Settings</p>
+                    <h2>基本設定</h2>
+                    <p>URL長のハードリミットやメニューの親タイトルを調整します。</p>
+                  </header>
+                  <div className="options-panel__grid">
+                    <label className="options-panel__field">
+                      <span className="field-label">URLハードリミット (文字数)</span>
+                      <input
+                        id="hardLimit"
+                        type="number"
+                        className="input-field"
+                        min="0"
+                        value={draft.hardLimit}
+                        onChange={handleHardLimitChange}
+                      />
+                      <span className="options-panel__hint">
+                        URLがこの長さを超えると自動でキャンセルします。
+                      </span>
+                    </label>
+                    <label className="options-panel__field">
+                      <span className="field-label">コンテキストメニュー親タイトル</span>
+                      <input
+                        id="parentMenuTitle"
+                        type="text"
+                        className="input-field"
+                        placeholder="ChatGPT Search"
+                        value={draft.parentMenuTitle}
+                        onChange={handleParentMenuTitleChange}
+                      />
+                      <span className="options-panel__hint">
+                        右クリックメニューの親見出しとして表示されます。
+                      </span>
+                    </label>
+                  </div>
+                </section>
+
+                <section className="options-panel options-panel--template">
+                  {selectedTemplate ? (
+                    <TemplateEditor
+                      template={selectedTemplate}
+                      onChange={(updater) =>
+                        handleTemplateChange(selectedTemplate.id, updater)
+                      }
+                    />
+                  ) : (
+                    <div className="options-panel__empty">
+                      テンプレートを左のリストから選択してください。
+                    </div>
+                  )}
+                </section>
+
+                <div className="options-actions">
+                  <div>
+                    <p className="options-actions__title">変更を保存しますか？</p>
+                    <span className="status-text" id="statusText">
+                      {isLoading ? '設定を読み込み中…' : statusText}
+                    </span>
+                  </div>
+                  <div className="options-actions__buttons">
+                    <button
+                      type="button"
+                      className="btn-secondary"
+                      id="resetButton"
+                      onClick={() => {
+                        void handleReset();
+                      }}
+                      disabled={isSaving || isResetting}
+                    >
+                      {isResetting ? 'リセット中…' : '初期設定に戻す'}
+                    </button>
+                    <button
+                      type="submit"
+                      className="btn-primary"
+                      id="saveButton"
+                      disabled={isSaving}
+                    >
+                      {isSaving ? '保存中…' : '保存する'}
+                    </button>
                   </div>
                 </div>
-              </div>
-
-              <div className="mt-8 grid gap-6 md:grid-cols-2">
-                <label className="flex flex-col gap-2">
-                  <span className="field-label">
-                    URLハードリミット (文字数)
-                  </span>
-                  <input
-                    id="hardLimit"
-                    type="number"
-                    className="input-field"
-                    min="0"
-                    value={draft.hardLimit}
-                    onChange={handleHardLimitChange}
-                  />
-                  <span className="text-xs text-slate-400">
-                    URLがこの長さを超えると自動でキャンセルします。
-                  </span>
-                </label>
-                <label className="flex flex-col gap-2">
-                  <span className="field-label">
-                    コンテキストメニュー親タイトル
-                  </span>
-                  <input
-                    id="parentMenuTitle"
-                    type="text"
-                    className="input-field"
-                    placeholder="ChatGPT Search"
-                    value={draft.parentMenuTitle}
-                    onChange={handleParentMenuTitleChange}
-                  />
-                  <span className="text-xs text-slate-400">
-                    右クリックメニューの親見出しとして表示されます。
-                  </span>
-                </label>
-              </div>
-            </section>
-
-            <section className="surface-card px-7 py-8">
-              <div className="flex flex-col gap-3">
-                <p className="section-title">Templates</p>
-                <h2 className="text-xl font-semibold">
-                  テンプレートをカスタマイズ
-                </h2>
-                <p className="text-sm text-slate-500">
-                  個別のテンプレートでURL・プロンプト・モデル設定を細かく制御します。プレビューで生成結果を確認しながら編集できます。
-                </p>
-              </div>
-
-              <div className="template-grid mt-8 grid gap-8 lg:grid-cols-2">
-                {draft.templates.map((template) => (
-                  <TemplateCard
-                    key={template.id}
-                    template={template}
-                    onChange={(updater) =>
-                      handleTemplateChange(template.id, updater)
-                    }
-                  />
-                ))}
-              </div>
-            </section>
-
-            <div className="surface-card flex flex-col gap-6 px-7 py-6 md:flex-row md:items-center md:justify-between">
-              <div className="space-y-1">
-                <p className="text-sm font-semibold text-slate-700">
-                  変更を保存しますか？
-                </p>
-                <span className="status-text" id="statusText">
-                  {isLoading ? '設定を読み込み中…' : statusText}
-                </span>
-              </div>
-              <div className="flex flex-col gap-3 md:flex-row">
-                <button
-                  type="button"
-                  className="btn-secondary md:min-w-[160px]"
-                  id="resetButton"
-                  onClick={() => {
-                    void handleReset();
-                  }}
-                  disabled={isSaving || isResetting}
-                >
-                  {isResetting ? 'リセット中…' : '初期設定に戻す'}
-                </button>
-                <button
-                  type="submit"
-                  className="btn-primary md:min-w-[160px]"
-                  id="saveButton"
-                  disabled={isSaving}
-                >
-                  {isSaving ? '保存中…' : '保存する'}
-                </button>
               </div>
             </div>
           </form>
         ) : (
-          <section className="surface-card mt-10 flex flex-col gap-4 px-7 py-8 text-sm text-slate-600">
+          <section className="options-empty">
             <p>
               {isLoading
                 ? '設定を読み込み中…'
                 : '設定を読み込めませんでした。ページを再読み込みしてください。'}
             </p>
             {loadingError && (
-              <p className="warning-text text-sm">{loadingError}</p>
+              <p className="warning-text">{loadingError}</p>
             )}
           </section>
         )}

@@ -83,6 +83,11 @@ function PopupApp(): JSX.Element {
 
   const hasTemplates = templates.length > 0;
   const templateOptions = useMemo(() => templates, [templates]);
+  const selectedTemplate = useMemo(
+    () =>
+      templateOptions.find((template) => template.id === selectedTemplateId),
+    [templateOptions, selectedTemplateId],
+  );
 
   const handleSubmit = useCallback(
     async (event: FormEvent<HTMLFormElement>) => {
@@ -126,29 +131,78 @@ function PopupApp(): JSX.Element {
     [inputText, selectedTemplateId],
   );
 
+  const handleTemplateSelect = useCallback((templateId: string) => {
+    setSelectedTemplateId(templateId);
+    setStatusMessage('');
+  }, []);
+
   const handleOpenOptions = useCallback(() => {
     chrome.runtime.openOptionsPage();
   }, []);
 
   return (
-    <div className="min-h-full bg-surface/70 px-4 py-5">
-      <main className="surface-card relative w-[360px] max-w-full overflow-hidden px-5 pb-6 pt-5">
-        <section className="gradient-header mb-6 rounded-2xl px-5 pb-6 pt-5">
-          <div className="relative z-10 flex flex-col gap-3">
-            <span className="chip w-fit bg-white/25 text-white/80">
-              Quick Prompt
-            </span>
-            <h1 className="text-2xl font-semibold tracking-tight">
-              ChatGPT Search
-            </h1>
-            <p className="text-sm text-white/70">
-              選択テキストを即座にテンプレートへ差し込み、洗練されたプロンプトでChatGPTを呼び出します。
+    <div className="popup-wrapper">
+      <div className="popup-shell">
+        <aside className="popup-sidebar">
+          <div className="popup-sidebar__heading">
+            <p className="sidebar-caption">テンプレート</p>
+            <h2>クイックリスト</h2>
+            <p className="sidebar-description">
+              使用したいテンプレートを選んでください。
             </p>
           </div>
-        </section>
+          <div className="template-list" role="list">
+            {!hasTemplates ? (
+              <p className="template-list__empty">
+                有効なテンプレートがありません。
+              </p>
+            ) : (
+              templateOptions.map((template) => {
+                const active = template.id === selectedTemplateId;
+                return (
+                  <button
+                    type="button"
+                    key={template.id}
+                    className={`template-list__item ${
+                      active ? 'is-active' : ''
+                    }`}
+                    onClick={() => handleTemplateSelect(template.id)}
+                    disabled={isLoading}
+                  >
+                    <span>{template.label}</span>
+                  </button>
+                );
+              })
+            )}
+          </div>
+          <button
+            type="button"
+            className="sidebar-manage"
+            onClick={handleOpenOptions}
+          >
+            テンプレートを編集
+          </button>
+        </aside>
 
-        <form className="flex flex-col gap-5" onSubmit={handleSubmit}>
-          <div className="flex flex-col gap-2">
+        <main className="popup-main">
+          <section className="popup-hero">
+            <div className="popup-hero__content">
+              <span className="chip">Quick Prompt</span>
+              <h1>ChatGPT Search</h1>
+              <p>
+                選択テキストを即座にテンプレートへ差し込み、洗練されたプロンプトでChatGPTを呼び出します。
+              </p>
+            </div>
+          </section>
+
+          <form className="popup-form" onSubmit={handleSubmit}>
+            <div className="selected-template">
+              <p className="selected-template__label">使用するテンプレート</p>
+              <p className="selected-template__value">
+                {selectedTemplate ? selectedTemplate.label : '未選択'}
+              </p>
+            </div>
+
             <label htmlFor="inputText" className="field-label">
               検索したいテキスト
             </label>
@@ -161,32 +215,7 @@ function PopupApp(): JSX.Element {
               onChange={(event) => setInputText(event.target.value)}
               disabled={isLoading}
             />
-          </div>
 
-          <div className="flex flex-col gap-2">
-            <label htmlFor="templateSelect" className="field-label">
-              テンプレートを選択
-            </label>
-            <select
-              id="templateSelect"
-              className="input-field appearance-none text-sm"
-              value={hasTemplates ? selectedTemplateId : ''}
-              onChange={(event) => setSelectedTemplateId(event.target.value)}
-              disabled={!hasTemplates || isLoading}
-            >
-              {!hasTemplates ? (
-                <option value="">有効なテンプレートがありません</option>
-              ) : (
-                templateOptions.map((template) => (
-                  <option key={template.id} value={template.id}>
-                    {template.label}
-                  </option>
-                ))
-              )}
-            </select>
-          </div>
-
-          <div className="flex flex-col gap-3">
             <button
               type="submit"
               className="btn-primary w-full"
@@ -194,20 +223,13 @@ function PopupApp(): JSX.Element {
             >
               <span>{isSubmitting ? '送信中…' : 'ChatGPT を開く'}</span>
             </button>
-            <button
-              type="button"
-              className="btn-secondary w-full"
-              onClick={handleOpenOptions}
-            >
-              <span>テンプレートを編集</span>
-            </button>
-          </div>
 
-          <p className="status-text min-h-5 text-center" id="statusMessage">
-            {isLoading ? '設定を読み込み中…' : statusMessage}
-          </p>
-        </form>
-      </main>
+            <p className="status-text min-h-5 text-center" id="statusMessage">
+              {isLoading ? '設定を読み込み中…' : statusMessage}
+            </p>
+          </form>
+        </main>
+      </div>
     </div>
   );
 }
