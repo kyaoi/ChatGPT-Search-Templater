@@ -10,7 +10,8 @@
       "popup.html",
       "options.html",
       "manifest.json",
-      "README.md"
+      "README.md",
+      "!dist"
     ]
   },
   "formatter": {

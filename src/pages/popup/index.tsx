@@ -151,7 +151,7 @@ function PopupApp(): JSX.Element {
               使用したいテンプレートを選んでください。
             </p>
           </div>
-          <div className="template-list" role="list">
+          <div className="template-list">
             {!hasTemplates ? (
               <p className="template-list__empty">
                 有効なテンプレートがありません。
