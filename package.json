@@ -1,0 +1,12 @@
+{
+  "name": "chatgpt-search-templater",
+  "version": "0.1.0",
+  "description": "ChatGPT検索テンプレートを管理するChrome拡張（Manifest V3, TypeScript）",
+  "type": "module",
+  "scripts": {
+    "build": "tsc --project tsconfig.json"
+  },
+  "devDependencies": {
+    "typescript": "^5.6.3"
+  }
+}

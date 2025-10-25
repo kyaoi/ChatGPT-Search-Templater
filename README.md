@@ -94,6 +94,7 @@ function openChatGPT(template, selectionText, opts) {
 * **備考**
 
   * プレースホルダ未使用のテンプレートも保存可能ですが、意図誤解を避けるため **保存時に警告** を出します。
+  * リテラル `{TEXT}` / `{選択した文字列}` を入力したい場合は `{{TEXT}}` / `{{選択した文字列}}` と記述してください。
 
 ---
 
@@ -102,6 +103,7 @@ function openChatGPT(template, selectionText, opts) {
 * **テンプレート 1 / 2**（カード表示）
 
   * 入力欄：URL（自由入力、空OK）
+  * 検索内容テンプレート（複数行テキスト）。`{TEXT}` / `{選択した文字列}` が選択内容に置き換わります。
   * プレースホルダのプレビュー：`{TEXT}` に仮テキストを流し込み
   * チェックボックス：
 
@@ -134,8 +136,8 @@ function openChatGPT(template, selectionText, opts) {
 
 ## 8. 権限（Manifest v3）
 
-* `permissions`: `contextMenus`, `storage`, `tabs`
-* （将来のプレミアム機能で）`host_permissions`: `https://chatgpt.com/*`, `scripting`（自動貼り付け/送信に必要）
+* `permissions`: `contextMenus`, `storage`, `tabs`, `scripting`
+* `host_permissions`: `<all_urls>`（選択テキスト取得フォールバックで `chrome.scripting` を利用）
 
 **manifest.json（抜粋）**
 
@@ -144,7 +146,8 @@ function openChatGPT(template, selectionText, opts) {
   "manifest_version": 3,
   "name": "ChatGPT Search Templater",
   "version": "0.1.0",
-  "permissions": ["contextMenus", "storage", "tabs"],
+  "permissions": ["contextMenus", "storage", "tabs", "scripting"],
+  "host_permissions": ["<all_urls>"],
   "background": { "service_worker": "background.js" },
   "action": { "default_popup": "popup.html" },
   "options_page": "options.html"
