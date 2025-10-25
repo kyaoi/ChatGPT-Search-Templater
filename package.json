@@ -4,9 +4,21 @@
   "description": "ChatGPT検索テンプレートを管理するChrome拡張（Manifest V3, TypeScript）",
   "type": "module",
   "scripts": {
-    "build": "tsc --project tsconfig.json"
+    "prebuild": "tailwindcss -i src/ui.css -o dist/ui.css --minify",
+    "build": "tsc --noEmit && tsup",
+    "tailwind:watch": "tailwindcss -i src/ui.css -o dist/ui.css --watch"
   },
   "devDependencies": {
-    "typescript": "^5.6.3"
+    "@tailwindcss/cli": "^4.1.16",
+    "@tailwindcss/postcss": "^4.1.16",
+    "@types/react": "^19.2.2",
+    "@types/react-dom": "^19.2.2",
+    "tailwindcss": "^4.1.16",
+    "tsup": "^8.5.0",
+    "typescript": "^5.9.3"
+  },
+  "dependencies": {
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0"
   }
 }
