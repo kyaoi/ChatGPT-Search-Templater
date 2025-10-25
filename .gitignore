@@ -1,2 +1,31 @@
-dist/
-node_modules/
+# Build output
+/dist/
+
+# Node modules
+/node_modules/
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Environment variables
+.env
+.env.*
+
+# Editor directories and files
+.idea/
+.vscode/
+*.swp
+
+# MacOS files
+.DS_Store
+
+# TypeScript build artifacts
+*.tsbuildinfo
+
+# Other unwanted files
+*.log
+.cache/
+.turbo/
