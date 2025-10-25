@@ -265,6 +265,8 @@ async function bootstrap(): Promise<void> {
   await enqueueContextMenuUpdate(currentSettings);
 }
 
+void bootstrap();
+
 chrome.runtime.onInstalled.addListener(() => {
   void bootstrap();
 });
