@@ -13,12 +13,12 @@ export function TemplateList({
   onSelect,
 }: TemplateListProps): JSX.Element {
   return (
-    <aside className="flex flex-col gap-6 rounded-[28px] border border-[rgba(148,163,184,0.25)] bg-[rgba(255,255,255,0.6)] p-6 backdrop-blur-[22px] shadow-[0_25px_50px_-30px_rgba(15,23,42,0.4)]">
+    <aside className="flex min-w-0 flex-col gap-6 rounded-[32px] border border-[rgba(148,163,184,0.22)] bg-[rgba(255,255,255,0.82)] p-7 backdrop-blur-[24px] shadow-[0_36px_90px_-40px_rgba(15,23,42,0.45)]">
       <div className="flex flex-col gap-3">
-        <p className="text-[12px] uppercase tracking-[0.28em] text-[#475569]">
+        <p className="text-[11px] uppercase tracking-[0.32em] text-[#64748b]">
           Templates
         </p>
-        <h2 className="mt-1.5 text-[1.25rem] font-semibold text-[#1e293b]">
+        <h2 className="mt-1.5 text-[1.35rem] font-semibold text-[#0f172a]">
           テンプレート一覧
         </h2>
         <p className="text-[13px] leading-[1.6] text-[#475569]">
@@ -27,7 +27,7 @@ export function TemplateList({
       </div>
       <div className="flex flex-col gap-3">
         {templates.length === 0 ? (
-          <p className="rounded-[18px] border border-dashed border-[rgba(129,140,248,0.6)] px-4 py-[14px] text-center text-[13px] leading-[1.6] text-[#475569]">
+          <p className="rounded-[18px] border border-dashed border-[rgba(129,140,248,0.6)] px-4 py-[14px] text-center text-[13px] leading-[1.6] text-[#64748b]">
             テンプレートがありません。
           </p>
         ) : (
@@ -37,14 +37,14 @@ export function TemplateList({
               <button
                 type="button"
                 key={template.id}
-                className={`flex w-full items-center justify-between gap-3 rounded-[18px] border border-[rgba(148,163,184,0.4)] bg-[rgba(255,255,255,0.5)] px-4 py-3 text-left font-semibold text-[#334155] transition duration-200 hover:border-[rgba(129,140,248,0.6)] hover:bg-[rgba(255,255,255,0.8)] hover:text-[#0f172a] ${
+                className={`flex w-full items-center justify-between gap-3 rounded-[18px] border border-[rgba(148,163,184,0.36)] bg-[rgba(248,250,252,0.85)] px-4 py-3 text-left font-semibold text-[#334155] transition duration-200 hover:border-[rgba(129,140,248,0.6)] hover:bg-white hover:text-[#0f172a] ${
                   active
-                    ? 'border-transparent bg-[linear-gradient(135deg,rgba(123,97,255,0.8),rgba(56,189,248,0.7))] text-white shadow-[0_14px_30px_-20px_rgba(99,102,241,0.6)] hover:border-transparent hover:bg-[linear-gradient(135deg,rgba(123,97,255,0.8),rgba(56,189,248,0.7))] hover:text-white'
+                    ? 'border-transparent bg-[linear-gradient(135deg,rgba(123,97,255,0.82),rgba(56,189,248,0.7))] text-white shadow-[0_18px_40px_-28px_rgba(99,102,241,0.65)] hover:border-transparent hover:bg-[linear-gradient(135deg,rgba(123,97,255,0.82),rgba(56,189,248,0.7))] hover:text-white'
                     : ''
                 }`}
                 onClick={() => onSelect(template.id)}
               >
-                <span className="truncate">
+                <span className="min-w-0 flex-1 truncate pr-3">
                   {template.label || '未命名テンプレート'}
                 </span>
                 <span

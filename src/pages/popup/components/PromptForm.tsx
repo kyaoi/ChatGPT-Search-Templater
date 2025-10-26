@@ -23,14 +23,14 @@ export function PromptForm({
 }: PromptFormProps): JSX.Element {
   return (
     <form
-      className="flex flex-col gap-4 rounded-[22px] border border-[rgba(148,163,184,0.25)] bg-[rgba(255,255,255,0.75)] p-5 backdrop-blur-[18px] shadow-[inset_0_1px_0_rgba(255,255,255,0.1),_0_20px_35px_-32px_rgba(15,23,42,0.4)]"
+      className="flex w-full flex-col gap-5 rounded-[26px] border border-[rgba(148,163,184,0.25)] bg-[rgba(255,255,255,0.9)] p-6 backdrop-blur-[18px] shadow-[inset_0_1px_0_rgba(255,255,255,0.15),_0_24px_50px_-36px_rgba(15,23,42,0.45)]"
       onSubmit={onSubmit}
     >
-      <div className="flex items-center justify-between gap-3 rounded-[14px] border border-[rgba(56,189,248,0.3)] bg-[rgba(56,189,248,0.15)] px-[14px] py-[10px]">
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-[14px] border border-[rgba(56,189,248,0.3)] bg-[rgba(56,189,248,0.15)] px-[14px] py-[10px]">
         <p className="text-[11px] uppercase tracking-[0.24em] text-[#475569]">
           使用するテンプレート
         </p>
-        <p className="text-[14px] font-semibold text-[#1e293b]">
+        <p className="max-w-full truncate text-sm font-semibold text-[#1e293b]">
           {selectedTemplateLabel ?? '未選択'}
         </p>
       </div>
@@ -40,7 +40,7 @@ export function PromptForm({
       </label>
       <textarea
         id="inputText"
-        className="min-h-36 w-full resize-y rounded-xl border border-border/70 bg-white/90 px-3.5 py-2.5 text-sm text-slate-900 shadow-[0_6px_18px_-12px_rgb(15_23_42/0.3)] transition duration-200 placeholder:text-slate-400 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30 disabled:cursor-not-allowed disabled:opacity-60"
+        className="min-h-40 w-full resize-y rounded-xl border border-border/70 bg-white/90 px-3.5 py-2.5 text-sm text-slate-900 shadow-[0_10px_30px_-24px_rgb(15_23_42/0.4)] transition duration-200 placeholder:text-slate-400 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30 disabled:cursor-not-allowed disabled:opacity-60"
         placeholder="選択テキストを貼り付けてください"
         spellCheck={false}
         value={inputText}

@@ -118,29 +118,31 @@ export function PopupApp(): JSX.Element {
   const statusText = isLoading ? '設定を読み込み中…' : statusMessage;
 
   return (
-    <div className="min-h-full bg-[radial-gradient(120%_140%_at_0%_0%,rgba(56,189,248,0.1),transparent),_radial-gradient(110%_120%_at_100%_0%,rgba(129,140,248,0.1),transparent),_linear-gradient(135deg,#ffffff,#f0f5ff)] p-4 text-[#334155]">
-      <div className="mx-auto flex w-full max-w-[320px] items-stretch gap-4 rounded-[24px] border border-[rgba(148,163,184,0.25)] bg-[rgba(255,255,255,0.6)] p-[18px] backdrop-blur-[20px] shadow-[0_30px_60px_-32px_rgba(15,23,42,0.3)] max-[520px]:flex-col max-[520px]:p-4">
-        <TemplateListPanel
-          templates={templateOptions}
-          selectedTemplateId={selectedTemplateId}
-          onSelect={handleTemplateSelect}
-          isLoading={isLoading}
-          onOpenOptions={handleOpenOptions}
-        />
-
-        <main className="flex flex-1 flex-col gap-[18px]">
-          <HeroSection />
-          <PromptForm
-            selectedTemplateLabel={selectedTemplate?.label ?? null}
-            inputText={inputText}
-            onInputChange={handleInputChange}
-            onSubmit={handleSubmit}
-            isSubmitting={isSubmitting}
-            hasTemplates={hasTemplates}
+    <div className="min-h-full w-full bg-[radial-gradient(140%_120%_at_10%_10%,rgba(56,189,248,0.12),transparent),_radial-gradient(120%_140%_at_90%_0%,rgba(129,140,248,0.14),transparent),_linear-gradient(135deg,#f7f9ff,#eef2ff)] px-6 py-6 text-[#334155]">
+      <div className="mx-auto flex w-full flex-col gap-6 rounded-[32px] border border-[rgba(148,163,184,0.22)] bg-[rgba(255,255,255,0.82)] p-6 shadow-[0_32px_80px_-40px_rgba(15,23,42,0.55)] backdrop-blur-[26px] lg:p-8">
+        <div className="grid w-full gap-6 lg:grid-cols-[minmax(240px,320px)_1fr]">
+          <TemplateListPanel
+            templates={templateOptions}
+            selectedTemplateId={selectedTemplateId}
+            onSelect={handleTemplateSelect}
             isLoading={isLoading}
-            statusText={statusText}
+            onOpenOptions={handleOpenOptions}
           />
-        </main>
+
+          <main className="flex min-w-0 flex-col gap-6">
+            <HeroSection />
+            <PromptForm
+              selectedTemplateLabel={selectedTemplate?.label ?? null}
+              inputText={inputText}
+              onInputChange={handleInputChange}
+              onSubmit={handleSubmit}
+              isSubmitting={isSubmitting}
+              hasTemplates={hasTemplates}
+              isLoading={isLoading}
+              statusText={statusText}
+            />
+          </main>
+        </div>
       </div>
     </div>
   );

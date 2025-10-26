@@ -4,7 +4,7 @@
   "description": "ChatGPT検索テンプレートを管理するChrome拡張（Manifest V3, TypeScript）",
   "type": "module",
   "scripts": {
-    "prebuild": "tailwindcss -i src/styles/ui.css -o dist/ui.css --minify",
+    "prebuild": "node scripts/prebuild.mjs && tailwindcss -i src/styles/ui.css -o dist/ui.css --minify",
     "build": "tsc --noEmit && tsup",
     "tailwind:watch": "tailwindcss -i src/styles/ui.css -o dist/ui.css --watch",
     "lint": "biome check .",
