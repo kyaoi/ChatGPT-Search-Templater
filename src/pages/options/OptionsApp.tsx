@@ -2,6 +2,7 @@ import type { FormEvent, JSX } from 'react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   collectTemplateWarnings,
+  createTemplateDefaults,
   DEFAULT_SETTINGS,
   normalizeSettings,
 } from '../../lib/settings.js';
@@ -82,6 +83,29 @@ export function OptionsApp(): JSX.Element {
     },
     [markDirty],
   );
+
+  const handleTemplateAdd = useCallback(() => {
+    const newTemplate = createTemplateDefaults();
+    const draftTemplate: TemplateDraft = {
+      ...newTemplate,
+      customModel: newTemplate.customModel ?? '',
+    };
+    let updated = false;
+    setDraft((current) => {
+      if (!current) {
+        return current;
+      }
+      updated = true;
+      return {
+        ...current,
+        templates: [...current.templates, draftTemplate],
+      };
+    });
+    if (updated) {
+      setSelectedTemplateId(draftTemplate.id);
+      markDirty();
+    }
+  }, [markDirty]);
 
   const handleTemplateSelect = useCallback((templateId: string) => {
     setSelectedTemplateId(templateId);
@@ -188,6 +212,7 @@ export function OptionsApp(): JSX.Element {
                 templates={draft.templates}
                 selectedTemplateId={selectedTemplateId}
                 onSelect={handleTemplateSelect}
+                onAdd={handleTemplateAdd}
               />
 
               <div className="flex min-w-0 flex-col gap-7">
