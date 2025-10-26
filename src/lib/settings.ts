@@ -125,9 +125,21 @@ function sanitizeTemplate(
 }
 
 export function generateTemplateId(): string {
-  const random = Math.random().toString(36).slice(2, 8);
-  const timestamp = Date.now().toString(36);
-  return `template-${timestamp}-${random}`;
+  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+    return `template-${crypto.randomUUID()}`;
+  } else if (typeof crypto !== 'undefined' && typeof crypto.getRandomValues === 'function') {
+    // Fallback: generate a random 8-character hex string
+    const array = new Uint32Array(2);
+    crypto.getRandomValues(array);
+    const random = Array.from(array).map(n => n.toString(16).padStart(8, '0')).join('');
+    const timestamp = Date.now().toString(36);
+    return `template-${timestamp}-${random}`;
+  } else {
+    // Last resort: use Math.random (not recommended)
+    const random = Math.random().toString(36).slice(2, 10);
+    const timestamp = Date.now().toString(36);
+    return `template-${timestamp}-${random}`;
+  }
 }
 
 export function createTemplateDefaults(
