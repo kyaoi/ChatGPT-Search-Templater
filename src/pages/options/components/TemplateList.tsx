@@ -5,12 +5,14 @@ interface TemplateListProps {
   templates: TemplateDraft[];
   selectedTemplateId: string | null;
   onSelect: (templateId: string) => void;
+  onAdd: () => void;
 }
 
 export function TemplateList({
   templates,
   selectedTemplateId,
   onSelect,
+  onAdd,
 }: TemplateListProps): JSX.Element {
   return (
     <aside className="flex min-w-0 flex-col gap-6 rounded-[32px] border border-[rgba(148,163,184,0.22)] bg-[rgba(255,255,255,0.82)] p-7 backdrop-blur-[24px] shadow-[0_36px_90px_-40px_rgba(15,23,42,0.45)] xl:sticky xl:top-6 xl:h-fit">
@@ -61,6 +63,14 @@ export function TemplateList({
           })
         )}
       </div>
+      <button
+        type="button"
+        className="flex items-center justify-center gap-2 rounded-[18px] border border-dashed border-[rgba(129,140,248,0.6)] px-4 py-[14px] text-[13px] font-semibold text-primary transition duration-200 hover:border-primary hover:bg-white"
+        onClick={onAdd}
+      >
+        <span className="text-lg leading-none">＋</span>
+        テンプレートを追加
+      </button>
       <div className="border-t border-[rgba(148,163,184,0.3)] pt-4 text-[12px] leading-[1.6] text-[#475569]">
         <p>テンプレートの保存内容は即時反映されます。ブラウザの再読み込みは不要です。</p>
       </div>

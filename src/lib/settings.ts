@@ -29,32 +29,177 @@ export interface ExtensionSettings {
   parentMenuTitle: string;
 }
 
-const TEMPLATE_IDS = ['template-1', 'template-2'] as const;
-export const MAX_TEMPLATES = TEMPLATE_IDS.length;
 export const DEFAULT_HARD_LIMIT = 3000;
 export const DEFAULT_PARENT_MENU_TITLE = 'ChatGPTで検索';
 
+const TEMPLATE_MODEL_OPTIONS: readonly TemplateModelOption[] = [
+  'gpt-4o',
+  'o3',
+  'gpt-5',
+  'gpt-5-thinking',
+  'custom',
+];
+
+export function isTemplateModelOption(value: unknown): value is TemplateModelOption {
+  return (
+    typeof value === 'string' &&
+    TEMPLATE_MODEL_OPTIONS.some((option) => option === value)
+  );
+}
+
+const TEMPLATE_BLUEPRINT: Omit<TemplateSettings, 'id'> = {
+  label: '標準検索',
+  url: DEFAULT_TEMPLATE_URL,
+  queryTemplate: DEFAULT_QUERY_TEMPLATE,
+  enabled: true,
+  hintsSearch: false,
+  temporaryChat: false,
+  model: 'gpt-5',
+};
+
+function createTemplateFallback(): TemplateSettings {
+  return {
+    id: generateTemplateId(),
+    ...TEMPLATE_BLUEPRINT,
+  };
+}
+
+function sanitizeTemplate(
+  template: Partial<TemplateSettings> | undefined,
+  fallback: TemplateSettings,
+): TemplateSettings {
+  const source = template ?? {};
+  const labelCandidate =
+    typeof source.label === 'string' ? source.label.trim() : '';
+  const label = labelCandidate.length > 0 ? labelCandidate : fallback.label;
+
+  const urlCandidate =
+    typeof source.url === 'string' ? source.url.trim() : '';
+  const url = urlCandidate.length > 0 ? urlCandidate : fallback.url;
+
+  const queryTemplate =
+    typeof source.queryTemplate === 'string'
+      ? source.queryTemplate
+      : fallback.queryTemplate;
+
+  const enabled =
+    typeof source.enabled === 'boolean' ? source.enabled : fallback.enabled;
+
+  const hintsSearch =
+    typeof source.hintsSearch === 'boolean'
+      ? source.hintsSearch
+      : fallback.hintsSearch;
+
+  const temporaryChat =
+    typeof source.temporaryChat === 'boolean'
+      ? source.temporaryChat
+      : fallback.temporaryChat;
+
+  const model = isTemplateModelOption(source.model)
+    ? source.model
+    : fallback.model;
+
+  const customModelValue =
+    model === 'custom'
+      ? typeof source.customModel === 'string'
+        ? source.customModel.trim()
+        : fallback.customModel ?? ''
+      : undefined;
+
+  const idCandidate =
+    typeof source.id === 'string' && source.id.trim().length > 0
+      ? source.id.trim()
+      : fallback.id;
+
+  const normalized: TemplateSettings = {
+    id: idCandidate,
+    label,
+    url,
+    queryTemplate,
+    enabled,
+    hintsSearch,
+    temporaryChat,
+    model,
+  };
+
+  if (customModelValue && customModelValue.length > 0) {
+    normalized.customModel = customModelValue;
+  }
+
+  return normalized;
+}
+
+export function generateTemplateId(): string {
+  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+    return `template-${crypto.randomUUID()}`;
+  } else if (typeof crypto !== 'undefined' && typeof crypto.getRandomValues === 'function') {
+    // Fallback: generate a random 8-character hex string
+    const array = new Uint32Array(2);
+    crypto.getRandomValues(array);
+    const random = Array.from(array).map((n) => n.toString(16).padStart(8, '0')).join('');
+    const timestamp = Date.now().toString(36);
+    return `template-${timestamp}-${random}`;
+  } else {
+    // Last resort: use Math.random (not recommended)
+    const random = Math.random().toString(36).slice(2, 10);
+    const timestamp = Date.now().toString(36);
+    return `template-${timestamp}-${random}`;
+  }
+}
+
+export function createTemplateDefaults(
+  overrides?: Partial<TemplateSettings>,
+): TemplateSettings {
+  const fallback = createTemplateFallback();
+
+  if (overrides) {
+    if (typeof overrides.id === 'string' && overrides.id.trim().length > 0) {
+      fallback.id = overrides.id.trim();
+    }
+    if (typeof overrides.label === 'string') {
+      fallback.label = overrides.label;
+    }
+    if (typeof overrides.url === 'string') {
+      fallback.url = overrides.url;
+    }
+    if (typeof overrides.queryTemplate === 'string') {
+      fallback.queryTemplate = overrides.queryTemplate;
+    }
+    if (typeof overrides.enabled === 'boolean') {
+      fallback.enabled = overrides.enabled;
+    }
+    if (typeof overrides.hintsSearch === 'boolean') {
+      fallback.hintsSearch = overrides.hintsSearch;
+    }
+    if (typeof overrides.temporaryChat === 'boolean') {
+      fallback.temporaryChat = overrides.temporaryChat;
+    }
+    if (isTemplateModelOption(overrides.model)) {
+      fallback.model = overrides.model;
+    }
+    if (typeof overrides.customModel === 'string') {
+      const trimmed = overrides.customModel.trim();
+      if (trimmed.length > 0) {
+        fallback.customModel = trimmed;
+      } else {
+        delete fallback.customModel;
+      }
+    }
+  }
+
+  return sanitizeTemplate(undefined, fallback);
+}
+
 export const DEFAULT_TEMPLATES: TemplateSettings[] = [
-  {
-    id: TEMPLATE_IDS[0],
-    label: '標準検索',
-    url: DEFAULT_TEMPLATE_URL,
-    queryTemplate: DEFAULT_QUERY_TEMPLATE,
-    enabled: true,
-    hintsSearch: false,
-    temporaryChat: false,
-    model: 'gpt-5',
-  },
-  {
-    id: TEMPLATE_IDS[1],
+  createTemplateDefaults({ id: 'template-1' }),
+  createTemplateDefaults({
+    id: 'template-2',
     label: 'Search + Temporary',
-    url: DEFAULT_TEMPLATE_URL,
-    queryTemplate: DEFAULT_QUERY_TEMPLATE,
     enabled: false,
     hintsSearch: true,
     temporaryChat: true,
     model: 'gpt-5-thinking',
-  },
+  }),
 ];
 
 export const DEFAULT_SETTINGS: ExtensionSettings = {
@@ -70,53 +215,62 @@ export function getTemplateById(
   return templates.find((template) => template.id === id);
 }
 
-export function ensureTemplateCount(
-  templates: TemplateSettings[],
-): TemplateSettings[] {
-  const normalized: TemplateSettings[] = [];
-
-  TEMPLATE_IDS.forEach((templateId, index) => {
-    const source = templates[index];
-    if (source) {
-      normalized.push(enrichTemplate(source, templateId, index));
-      return;
-    }
-
-    const fallback = DEFAULT_TEMPLATES[index] ?? DEFAULT_TEMPLATES[0];
-    if (!fallback) {
-      throw new Error('default template is not defined');
-    }
-
-    normalized.push({ ...fallback });
-  });
-
-  return normalized;
-}
-
 export function enrichTemplate(
   template: Partial<TemplateSettings>,
   fallbackId: string,
   index: number,
 ): TemplateSettings {
-  const defaults = DEFAULT_TEMPLATES[index] ?? DEFAULT_TEMPLATES[0];
-  if (!defaults) {
-    throw new Error('default template is not defined');
+  const defaults =
+    DEFAULT_TEMPLATES[index] ?? createTemplateDefaults({ id: fallbackId });
+  return sanitizeTemplate(template, defaults);
+}
+
+function normalizeTemplates(
+  templates: Partial<TemplateSettings>[] | undefined,
+): TemplateSettings[] {
+  if (!Array.isArray(templates) || templates.length === 0) {
+    return DEFAULT_TEMPLATES.map((template) => ({ ...template }));
   }
 
-  return {
-    id: template.id ?? fallbackId,
-    label:
-      template.label && template.label.trim().length > 0
-        ? template.label
-        : defaults.label,
-    url: template.url ?? defaults.url,
-    queryTemplate: template.queryTemplate ?? defaults.queryTemplate,
-    enabled: template.enabled ?? defaults.enabled,
-    hintsSearch: template.hintsSearch ?? defaults.hintsSearch,
-    temporaryChat: template.temporaryChat ?? defaults.temporaryChat,
-    model: template.model ?? defaults.model,
-    customModel: template.customModel ?? defaults.customModel,
-  };
+  const seenIds = new Set<string>();
+
+  return templates.map((template, index) => {
+    const fallback =
+      DEFAULT_TEMPLATES[index] ?? createTemplateDefaults();
+    const normalized = sanitizeTemplate(template, fallback);
+
+    let id = normalized.id.trim();
+    if (id.length === 0 || seenIds.has(id)) {
+      const MAX_ID_ATTEMPTS = 1000;
+      let attempts = 0;
+      do {
+        id = generateTemplateId();
+        attempts++;
+        if (attempts >= MAX_ID_ATTEMPTS) {
+          throw new Error('Failed to generate a unique template ID after 1000 attempts.');
+        }
+      } while (seenIds.has(id));
+    }
+
+    seenIds.add(id);
+
+    const withId: TemplateSettings = {
+      ...normalized,
+      id,
+    };
+
+    if (normalized.model === 'custom') {
+      const customModel =
+        typeof template?.customModel === 'string'
+          ? template.customModel.trim()
+          : normalized.customModel;
+      if (customModel && customModel.length > 0) {
+        withId.customModel = customModel;
+      }
+    }
+
+    return withId;
+  });
 }
 
 export function normalizeSettings(
@@ -132,7 +286,7 @@ export function normalizeSettings(
       ? raw.parentMenuTitle.trim()
       : DEFAULT_PARENT_MENU_TITLE;
 
-  const templates = ensureTemplateCount(raw?.templates ?? DEFAULT_TEMPLATES);
+  const templates = normalizeTemplates(raw?.templates);
 
   return {
     hardLimit,

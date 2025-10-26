@@ -2,11 +2,19 @@ import { type ExtensionSettings, normalizeSettings } from './settings.js';
 
 const STORAGE_KEY = 'chatgpt-search-templater/settings';
 
+function isExtensionSettingsLike(
+  value: unknown,
+): value is Partial<ExtensionSettings> {
+  return typeof value === 'object' && value !== null;
+}
+
 export async function loadSettings(): Promise<ExtensionSettings> {
   return new Promise((resolve) => {
     chrome.storage.sync.get(STORAGE_KEY, (result: Record<string, unknown>) => {
-      const rawSettings =
-        (result?.[STORAGE_KEY] as Partial<ExtensionSettings>) ?? undefined;
+      const candidate = result?.[STORAGE_KEY];
+      const rawSettings = isExtensionSettingsLike(candidate)
+        ? candidate
+        : undefined;
       resolve(normalizeSettings(rawSettings));
     });
   });
@@ -25,16 +33,11 @@ export async function saveSettings(settings: ExtensionSettings): Promise<void> {
   });
 }
 
-type StorageChange = {
-  newValue?: unknown;
-  oldValue?: unknown;
-};
-
 export function observeSettings(
   callback: (settings: ExtensionSettings) => void,
 ): void {
   chrome.storage.onChanged.addListener(
-    (changes: Record<string, StorageChange>, areaName: string) => {
+    (changes: Record<string, chrome.storage.StorageChange>, areaName: string) => {
       if (areaName !== 'sync') {
         return;
       }
@@ -43,10 +46,11 @@ export function observeSettings(
         return;
       }
 
-      const newValue = storageChange.newValue as
-        | Partial<ExtensionSettings>
-        | undefined;
-      callback(normalizeSettings(newValue));
+      const newValue = storageChange.newValue;
+      const normalizedSource = isExtensionSettingsLike(newValue)
+        ? newValue
+        : undefined;
+      callback(normalizeSettings(normalizedSource));
     },
   );
 }
@@ -56,9 +60,10 @@ export function ensureDefaults(): Promise<ExtensionSettings> {
     chrome.storage.sync.get(
       STORAGE_KEY,
       async (result: Record<string, unknown>) => {
-        const current = result?.[STORAGE_KEY] as
-          | Partial<ExtensionSettings>
-          | undefined;
+        const candidate = result?.[STORAGE_KEY];
+        const current = isExtensionSettingsLike(candidate)
+          ? candidate
+          : undefined;
         const normalized = normalizeSettings(current);
         if (!current) {
           await saveSettings(normalized).catch(() => {

@@ -2,7 +2,7 @@ import type { ChangeEvent, JSX } from 'react';
 import { useCallback, useMemo } from 'react';
 import type { TemplateDraft, TemplateUpdater } from '../types.js';
 import { templatePreview } from '../draftAdapter.js';
-import type { TemplateModelOption } from '../../../lib/settings.js';
+import { isTemplateModelOption } from '../../../lib/settings.js';
 
 interface TemplateEditorProps {
   template: TemplateDraft;
@@ -150,7 +150,10 @@ export function TemplateEditor({
             className="w-full rounded-xl border border-[rgba(148,163,184,0.5)] bg-[rgba(255,255,255,0.8)] px-3.5 py-2.5 text-sm text-[#0f172a] shadow-[0_6px_18px_-12px_rgb(15_23_42/0.3)] transition duration-200 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30 disabled:cursor-not-allowed disabled:opacity-60"
             value={template.model}
             onChange={(event) => {
-              const value = event.target.value as TemplateModelOption;
+              const { value } = event.target;
+              if (!isTemplateModelOption(value)) {
+                return;
+              }
               onChange((current) => ({
                 ...current,
                 model: value,
