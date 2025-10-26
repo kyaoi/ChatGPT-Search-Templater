@@ -187,7 +187,7 @@ export function createTemplateDefaults(
     }
   }
 
-  return sanitizeTemplate(overrides, fallback);
+  return sanitizeTemplate(undefined, fallback);
 }
 
 export const DEFAULT_TEMPLATES: TemplateSettings[] = [
