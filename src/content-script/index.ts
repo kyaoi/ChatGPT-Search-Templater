@@ -1,19 +1,22 @@
 type SendResponse = (response?: Record<string, unknown>) => void;
 
+interface AlertMessage {
+  type: 'alert';
+  message: string;
+}
+
+interface GetSelectionMessage {
+  type: 'get-selection';
+}
+
 chrome.runtime.onMessage.addListener(
   (message: unknown, _sender: unknown, sendResponse: SendResponse) => {
-    if (!message || typeof message !== 'object') {
+    if (isAlertMessage(message)) {
+      window.alert(message.message);
       return undefined;
     }
 
-    const payload = message as { type?: string; message?: string };
-
-    if (payload.type === 'alert' && typeof payload.message === 'string') {
-      window.alert(payload.message);
-      return undefined;
-    }
-
-    if (payload.type === 'get-selection') {
+    if (isGetSelectionMessage(message)) {
       const selection = window.getSelection()?.toString() ?? '';
       sendResponse({ text: selection });
       return true;
@@ -22,3 +25,27 @@ chrome.runtime.onMessage.addListener(
     return undefined;
   },
 );
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null;
+}
+
+function isAlertMessage(value: unknown): value is AlertMessage {
+  if (!isRecord(value)) {
+    return false;
+  }
+  const { type, message } = value;
+  return (
+    typeof type === 'string' &&
+    type === 'alert' &&
+    typeof message === 'string'
+  );
+}
+
+function isGetSelectionMessage(value: unknown): value is GetSelectionMessage {
+  if (!isRecord(value)) {
+    return false;
+  }
+  const { type } = value;
+  return typeof type === 'string' && type === 'get-selection';
+}

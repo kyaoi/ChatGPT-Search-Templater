@@ -26,6 +26,10 @@ interface SelectionResponsePayload {
   text?: string;
 }
 
+interface ScriptSelectionResult {
+  text: string;
+}
+
 interface ExecuteTemplateMessage {
   type: 'execute-template';
   templateId: string;
@@ -36,6 +40,12 @@ type RuntimeMessage = ExecuteTemplateMessage;
 
 const MENU_PARENT_ID = 'chatgpt-search-templater:parent';
 const MENU_EDIT_ID = 'chatgpt-search-templater:edit';
+type ContextMenuContextList = [
+  `${chrome.contextMenus.ContextType}`,
+  ...`${chrome.contextMenus.ContextType}`[],
+];
+
+const SELECTION_CONTEXTS: ContextMenuContextList = ['selection'];
 
 let currentSettings: ExtensionSettings = DEFAULT_SETTINGS;
 let menuUpdateChain: Promise<void> = Promise.resolve();
@@ -114,7 +124,7 @@ function regenerateContextMenus(settings: ExtensionSettings): Promise<void> {
     await createMenu({
       id: MENU_PARENT_ID,
       title: settings.parentMenuTitle,
-      contexts: ['selection'] as [chrome.contextMenus.ContextType],
+      contexts: SELECTION_CONTEXTS,
     });
 
     const templateMenus = settings.templates
@@ -124,7 +134,7 @@ function regenerateContextMenus(settings: ExtensionSettings): Promise<void> {
           id: templateMenuId(template.id),
           parentId: MENU_PARENT_ID,
           title: template.label,
-          contexts: ['selection'] as [chrome.contextMenus.ContextType],
+          contexts: SELECTION_CONTEXTS,
         }),
       );
 
@@ -134,7 +144,7 @@ function regenerateContextMenus(settings: ExtensionSettings): Promise<void> {
       id: MENU_EDIT_ID,
       parentId: MENU_PARENT_ID,
       title: 'テンプレートを編集…',
-      contexts: ['selection'] as [chrome.contextMenus.ContextType],
+      contexts: SELECTION_CONTEXTS,
     });
   });
 }
@@ -196,17 +206,20 @@ async function fetchSelectionViaScripting(
   }
 
   try {
-    const results = (await chrome.scripting.executeScript({
+    const results = await chrome.scripting.executeScript<
+      [],
+      ScriptSelectionResult
+    >({
       target: { tabId, allFrames: true },
       world: 'ISOLATED',
-      func: () => {
+      func: (): ScriptSelectionResult => {
         const selection = window.getSelection();
         if (!selection || selection.rangeCount === 0) {
           return { text: '' };
         }
         return { text: selection.toString() };
       },
-    })) as Array<{ result?: { text?: string } } | undefined>;
+    });
 
     for (const entry of results ?? []) {
       const text = entry?.result?.text;

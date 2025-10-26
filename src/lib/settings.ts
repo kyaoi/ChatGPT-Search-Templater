@@ -40,6 +40,13 @@ const TEMPLATE_MODEL_OPTIONS: readonly TemplateModelOption[] = [
   'custom',
 ];
 
+export function isTemplateModelOption(value: unknown): value is TemplateModelOption {
+  return (
+    typeof value === 'string' &&
+    TEMPLATE_MODEL_OPTIONS.some((option) => option === value)
+  );
+}
+
 const TEMPLATE_BLUEPRINT: Omit<TemplateSettings, 'id'> = {
   label: '標準検索',
   url: DEFAULT_TEMPLATE_URL,
@@ -88,10 +95,8 @@ function sanitizeTemplate(
       ? source.temporaryChat
       : fallback.temporaryChat;
 
-  const model = TEMPLATE_MODEL_OPTIONS.includes(
-    source.model as TemplateModelOption,
-  )
-    ? (source.model as TemplateModelOption)
+  const model = isTemplateModelOption(source.model)
+    ? source.model
     : fallback.model;
 
   const customModelValue =
@@ -145,13 +150,41 @@ export function generateTemplateId(): string {
 export function createTemplateDefaults(
   overrides?: Partial<TemplateSettings>,
 ): TemplateSettings {
-  const fallback = {
-    ...createTemplateFallback(),
-    ...overrides,
-  } as TemplateSettings;
+  const fallback = createTemplateFallback();
 
-  if (overrides?.id && overrides.id.trim().length > 0) {
-    fallback.id = overrides.id.trim();
+  if (overrides) {
+    if (typeof overrides.id === 'string' && overrides.id.trim().length > 0) {
+      fallback.id = overrides.id.trim();
+    }
+    if (typeof overrides.label === 'string') {
+      fallback.label = overrides.label;
+    }
+    if (typeof overrides.url === 'string') {
+      fallback.url = overrides.url;
+    }
+    if (typeof overrides.queryTemplate === 'string') {
+      fallback.queryTemplate = overrides.queryTemplate;
+    }
+    if (typeof overrides.enabled === 'boolean') {
+      fallback.enabled = overrides.enabled;
+    }
+    if (typeof overrides.hintsSearch === 'boolean') {
+      fallback.hintsSearch = overrides.hintsSearch;
+    }
+    if (typeof overrides.temporaryChat === 'boolean') {
+      fallback.temporaryChat = overrides.temporaryChat;
+    }
+    if (isTemplateModelOption(overrides.model)) {
+      fallback.model = overrides.model;
+    }
+    if (typeof overrides.customModel === 'string') {
+      const trimmed = overrides.customModel.trim();
+      if (trimmed.length > 0) {
+        fallback.customModel = trimmed;
+      } else {
+        delete fallback.customModel;
+      }
+    }
   }
 
   return sanitizeTemplate(overrides, fallback);
