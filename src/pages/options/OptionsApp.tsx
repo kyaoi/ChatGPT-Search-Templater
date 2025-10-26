@@ -179,18 +179,18 @@ export function OptionsApp(): JSX.Element {
 
   return (
     <div className="min-h-screen bg-[radial-gradient(160%_120%_at_10%_20%,rgba(56,189,248,0.12),transparent),_radial-gradient(100%_140%_at_90%_0%,rgba(129,140,248,0.16),transparent),_linear-gradient(180deg,#f5f7ff,#ffffff)] text-[#334155]">
-      <main className="mx-auto w-full px-6 pt-16 pb-20 sm:px-8 xl:px-12">
+      <main className="mx-auto w-full max-w-[1040px] px-5 pt-16 pb-20 sm:px-6 lg:px-8">
         <OptionsHero />
         {draft ? (
           <form id="settingsForm" className="mt-10" onSubmit={handleSubmit}>
-            <div className="grid gap-8 lg:grid-cols-[minmax(260px,320px)_1fr]">
+            <div className="grid gap-7 xl:grid-cols-[minmax(260px,320px)_1fr]">
               <TemplateList
                 templates={draft.templates}
                 selectedTemplateId={selectedTemplateId}
                 onSelect={handleTemplateSelect}
               />
 
-              <div className="flex flex-col gap-7">
+              <div className="flex min-w-0 flex-col gap-7">
                 <GeneralSettingsSection
                   hardLimit={draft.hardLimit}
                   parentMenuTitle={draft.parentMenuTitle}

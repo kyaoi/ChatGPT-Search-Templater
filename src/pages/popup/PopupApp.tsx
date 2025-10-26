@@ -118,9 +118,9 @@ export function PopupApp(): JSX.Element {
   const statusText = isLoading ? '設定を読み込み中…' : statusMessage;
 
   return (
-    <div className="min-h-full w-full bg-[radial-gradient(140%_120%_at_10%_10%,rgba(56,189,248,0.12),transparent),_radial-gradient(120%_140%_at_90%_0%,rgba(129,140,248,0.14),transparent),_linear-gradient(135deg,#f7f9ff,#eef2ff)] px-6 py-6 text-[#334155]">
-      <div className="mx-auto flex w-full flex-col gap-6 rounded-[32px] border border-[rgba(148,163,184,0.22)] bg-[rgba(255,255,255,0.82)] p-6 shadow-[0_32px_80px_-40px_rgba(15,23,42,0.55)] backdrop-blur-[26px] lg:p-8">
-        <div className="grid w-full gap-6 lg:grid-cols-[minmax(240px,320px)_1fr]">
+    <div className="min-h-full w-full bg-[radial-gradient(140%_120%_at_10%_10%,rgba(56,189,248,0.12),transparent),_radial-gradient(120%_140%_at_90%_0%,rgba(129,140,248,0.14),transparent),_linear-gradient(135deg,#f7f9ff,#eef2ff)] px-4 py-5 text-[#334155] sm:px-6">
+      <div className="mx-auto flex w-full min-w-[360px] max-w-[640px] flex-col gap-5 rounded-[28px] border border-[rgba(148,163,184,0.22)] bg-[rgba(255,255,255,0.9)] p-5 shadow-[0_28px_70px_-42px_rgba(15,23,42,0.55)] backdrop-blur-[24px] sm:gap-6 sm:p-6 md:max-w-[760px] lg:max-w-[820px]">
+        <div className="grid w-full gap-5 md:grid-cols-[minmax(240px,280px)_1fr] md:items-start">
           <TemplateListPanel
             templates={templateOptions}
             selectedTemplateId={selectedTemplateId}
@@ -129,7 +129,7 @@ export function PopupApp(): JSX.Element {
             onOpenOptions={handleOpenOptions}
           />
 
-          <main className="flex min-w-0 flex-col gap-6">
+          <main className="flex min-w-0 flex-col gap-5">
             <HeroSection />
             <PromptForm
               selectedTemplateLabel={selectedTemplate?.label ?? null}

@@ -1,9 +1,6 @@
 import type { ChangeEvent, JSX } from 'react';
 import { useCallback, useMemo } from 'react';
-import type {
-  TemplateDraft,
-  TemplateUpdater,
-} from '../types.js';
+import type { TemplateDraft, TemplateUpdater } from '../types.js';
 import { templatePreview } from '../draftAdapter.js';
 import type { TemplateModelOption } from '../../../lib/settings.js';
 
@@ -34,15 +31,15 @@ export function TemplateEditor({
 
   return (
     <section
-      className="flex flex-col gap-6 rounded-[28px] border border-[rgba(148,163,184,0.25)] bg-[linear-gradient(135deg,rgba(255,255,255,0.9),rgba(240,245,255,0.8))] p-7 shadow-[0_30px_60px_-38px_rgba(30,41,59,0.4)]"
+      className="flex w-full max-w-full flex-col gap-6 overflow-hidden rounded-[28px] border border-[rgba(148,163,184,0.25)] bg-[linear-gradient(135deg,rgba(255,255,255,0.9),rgba(240,245,255,0.8))] p-7 shadow-[0_30px_60px_-38px_rgba(30,41,59,0.4)]"
       data-template-id={template.id}
     >
-      <header className="flex items-start justify-between gap-5">
-        <div>
+      <header className="flex flex-wrap items-start justify-between gap-5">
+        <div className="min-w-0 flex-1">
           <p className="text-[12px] uppercase tracking-[0.3em] text-[#475569]">
             テンプレート詳細
           </p>
-          <h3 className="mt-1.5 text-[1.4rem] font-semibold text-[#1e293b]">
+          <h3 className="mt-1.5 truncate text-[1.4rem] font-semibold text-[#1e293b]">
             {template.label || '未命名テンプレート'}
           </h3>
         </div>
@@ -58,7 +55,7 @@ export function TemplateEditor({
         </label>
       </header>
 
-      <div className="flex flex-col gap-[18px]">
+      <div className="flex min-w-0 flex-col gap-[18px]">
         <label className="flex flex-col gap-[10px]">
           <span className="text-sm font-medium text-[#334155]">
             メニュー表示名
@@ -122,7 +119,7 @@ export function TemplateEditor({
         </label>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2">
+      <div className="grid gap-4 md:grid-cols-[repeat(2,minmax(0,1fr))]">
         <label className="inline-flex items-center gap-3 text-sm text-[#334155]">
           <input
             type="checkbox"
@@ -145,7 +142,7 @@ export function TemplateEditor({
         </label>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2">
+      <div className="grid gap-4 md:grid-cols-[repeat(2,minmax(0,1fr))]">
         <label className="flex flex-col gap-[10px]">
           <span className="text-sm font-medium text-[#334155]">モデル</span>
           <select
@@ -163,6 +160,7 @@ export function TemplateEditor({
             <option value="gpt-4o">gpt-4o</option>
             <option value="o3">o3</option>
             <option value="gpt-5">gpt-5</option>
+            <option value="gpt-5-thinking">gpt-5-thinking</option>
             <option value="custom">カスタム</option>
           </select>
         </label>
@@ -191,13 +189,13 @@ export function TemplateEditor({
 
       <div className="flex flex-col gap-3">
         <div
-          className="rounded-xl border border-[rgba(129,140,248,0.4)] bg-gradient-to-br from-surface-muted/80 to-white px-4 py-3 text-xs text-[#334155] shadow-inner"
+          className="rounded-xl border border-[rgba(129,140,248,0.4)] bg-gradient-to-br from-surface-muted/80 to-white px-4 py-3 text-xs text-[#334155] shadow-inner break-words whitespace-pre-wrap"
           data-role="query-preview"
         >
           {preview.query}
         </div>
         <div
-          className="rounded-xl border border-[rgba(129,140,248,0.4)] bg-[rgba(255,255,255,0.7)] px-4 py-3 text-xs text-[#334155] shadow-inner"
+          className="rounded-xl border border-[rgba(129,140,248,0.4)] bg-[rgba(255,255,255,0.7)] px-4 py-3 text-xs text-[#334155] shadow-inner break-all"
           data-role="preview"
         >
           {preview.url}

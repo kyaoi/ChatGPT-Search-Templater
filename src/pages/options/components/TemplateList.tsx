@@ -13,7 +13,7 @@ export function TemplateList({
   onSelect,
 }: TemplateListProps): JSX.Element {
   return (
-    <aside className="flex min-w-0 flex-col gap-6 rounded-[32px] border border-[rgba(148,163,184,0.22)] bg-[rgba(255,255,255,0.82)] p-7 backdrop-blur-[24px] shadow-[0_36px_90px_-40px_rgba(15,23,42,0.45)]">
+    <aside className="flex min-w-0 flex-col gap-6 rounded-[32px] border border-[rgba(148,163,184,0.22)] bg-[rgba(255,255,255,0.82)] p-7 backdrop-blur-[24px] shadow-[0_36px_90px_-40px_rgba(15,23,42,0.45)] xl:sticky xl:top-6 xl:h-fit">
       <div className="flex flex-col gap-3">
         <p className="text-[11px] uppercase tracking-[0.32em] text-[#64748b]">
           Templates

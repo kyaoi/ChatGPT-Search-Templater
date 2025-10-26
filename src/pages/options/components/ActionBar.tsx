@@ -16,8 +16,8 @@ export function ActionBar({
   onReset,
 }: ActionBarProps): JSX.Element {
   return (
-    <div className="flex flex-col gap-[18px] rounded-[26px] border border-[rgba(148,163,184,0.25)] bg-[rgba(255,255,255,0.7)] px-7 py-[22px] backdrop-blur-[18px] shadow-[0_25px_50px_-30px_rgba(15,23,42,0.4)] md:flex-row md:items-center md:justify-between">
-      <div>
+    <div className="flex w-full max-w-full flex-col gap-[18px] overflow-hidden rounded-[26px] border border-[rgba(148,163,184,0.25)] bg-[rgba(255,255,255,0.7)] px-7 py-[22px] backdrop-blur-[18px] shadow-[0_25px_50px_-30px_rgba(15,23,42,0.4)] md:flex-row md:items-center md:justify-between md:gap-6">
+      <div className="min-w-0 flex-1">
         <p className="font-semibold text-[#1e293b]">変更を保存しますか？</p>
         <span className="text-sm text-[#475569]" id="statusText">
           {isLoading ? '設定を読み込み中…' : statusText}

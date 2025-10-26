@@ -4,7 +4,12 @@ import {
   hasPlaceholder,
 } from './urlBuilder.js';
 
-export type TemplateModelOption = 'gpt-4o' | 'o3' | 'gpt-5' | 'custom';
+export type TemplateModelOption =
+  | 'gpt-4o'
+  | 'o3'
+  | 'gpt-5'
+  | 'gpt-5-thinking'
+  | 'custom';
 
 export interface TemplateSettings {
   id: string;
@@ -38,7 +43,7 @@ export const DEFAULT_TEMPLATES: TemplateSettings[] = [
     enabled: true,
     hintsSearch: false,
     temporaryChat: false,
-    model: 'gpt-4o',
+    model: 'gpt-5',
   },
   {
     id: TEMPLATE_IDS[1],
@@ -48,7 +53,7 @@ export const DEFAULT_TEMPLATES: TemplateSettings[] = [
     enabled: false,
     hintsSearch: true,
     temporaryChat: true,
-    model: 'gpt-5',
+    model: 'gpt-5-thinking',
   },
 ];
 

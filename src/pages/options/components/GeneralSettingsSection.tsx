@@ -22,7 +22,7 @@ export function GeneralSettingsSection({
   };
 
   return (
-    <section className="rounded-[28px] border border-[rgba(148,163,184,0.25)] bg-[rgba(255,255,255,0.7)] px-7 py-8 backdrop-blur-[20px] shadow-[0_28px_60px_-35px_rgba(30,41,59,0.4)]">
+    <section className="w-full max-w-full overflow-hidden rounded-[28px] border border-[rgba(148,163,184,0.25)] bg-[rgba(255,255,255,0.7)] px-7 py-8 backdrop-blur-[20px] shadow-[0_28px_60px_-35px_rgba(30,41,59,0.4)]">
       <header className="mb-6">
         <p className="text-[12px] uppercase tracking-[0.32em] text-[#475569]">
           General Settings
@@ -34,7 +34,7 @@ export function GeneralSettingsSection({
           URL長のハードリミットやメニューの親タイトルを調整します。
         </p>
       </header>
-      <div className="grid gap-5 md:grid-cols-2">
+      <div className="grid gap-5 md:grid-cols-[repeat(2,minmax(0,1fr))]">
         <label className="flex flex-col gap-[10px]">
           <span className="text-sm font-medium text-[#334155]">
             URLハードリミット (文字数)
