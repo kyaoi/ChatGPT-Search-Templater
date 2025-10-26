@@ -241,8 +241,14 @@ function normalizeTemplates(
 
     let id = normalized.id.trim();
     if (id.length === 0 || seenIds.has(id)) {
+      const MAX_ID_ATTEMPTS = 1000;
+      let attempts = 0;
       do {
         id = generateTemplateId();
+        attempts++;
+        if (attempts >= MAX_ID_ATTEMPTS) {
+          throw new Error('Failed to generate a unique template ID after 1000 attempts.');
+        }
       } while (seenIds.has(id));
     }
 
