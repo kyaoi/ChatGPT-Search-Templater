@@ -7,11 +7,13 @@ import { isTemplateModelOption } from '@shared/settings.js';
 interface TemplateEditorProps {
   template: TemplateDraft;
   onChange: (updater: TemplateUpdater) => void;
+  onRemove: (templateId: string) => void;
 }
 
 export function TemplateEditor({
   template,
   onChange,
+  onRemove,
 }: TemplateEditorProps): JSX.Element {
   const preview = useMemo(() => templatePreview(template), [template]);
 
@@ -29,6 +31,14 @@ export function TemplateEditor({
 
   const showCustomModel = template.model === 'custom';
 
+  const handleRemoveClick = useCallback(() => {
+    const confirmed = window.confirm('このテンプレートを削除しますか？');
+    if (!confirmed) {
+      return;
+    }
+    onRemove(template.id);
+  }, [onRemove, template.id]);
+
   return (
     <section
       className="flex w-full max-w-full flex-col gap-6 overflow-hidden rounded-[28px] border border-[rgba(148,163,184,0.25)] bg-[linear-gradient(135deg,rgba(255,255,255,0.9),rgba(240,245,255,0.8))] p-7 shadow-[0_30px_60px_-38px_rgba(30,41,59,0.4)]"
@@ -43,16 +53,25 @@ export function TemplateEditor({
             {template.label || '未命名テンプレート'}
           </h3>
         </div>
-        <label className="inline-flex items-center gap-[10px] text-sm text-[#334155]">
-          <input
-            type="checkbox"
-            data-field="enabled"
-            className="h-4 w-4 accent-primary"
-            checked={template.enabled}
-            onChange={handleCheckboxChange('enabled')}
-          />
-          <span className="font-semibold text-[#334155]">有効</span>
-        </label>
+        <div className="flex items-center gap-3">
+          <label className="inline-flex items-center gap-[10px] text-sm text-[#334155]">
+            <input
+              type="checkbox"
+              data-field="enabled"
+              className="h-4 w-4 accent-primary"
+              checked={template.enabled}
+              onChange={handleCheckboxChange('enabled')}
+            />
+            <span className="font-semibold text-[#334155]">有効</span>
+          </label>
+          <button
+            type="button"
+            className="rounded-full border border-transparent bg-rose-50 px-3 py-1.5 text-xs font-semibold text-rose-600 transition duration-200 hover:border-rose-200 hover:bg-rose-100"
+            onClick={handleRemoveClick}
+          >
+            削除
+          </button>
+        </div>
       </header>
 
       <div className="flex min-w-0 flex-col gap-[18px]">
