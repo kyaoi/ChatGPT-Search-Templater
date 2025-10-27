@@ -1,8 +1,9 @@
 # Build output
-/dist/
+/chrome-extension/dist/
 
 # Node modules
 /node_modules/
+/chrome-extension/node_modules/
 
 # Logs
 npm-debug.log*

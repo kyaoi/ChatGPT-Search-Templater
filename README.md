@@ -9,13 +9,14 @@
 ```
 / (root)
 ├─ shared/              # 拡張とプラグインで共通利用するテンプレート仕様
-├─ src/                 # Chrome 拡張 (TypeScript)
+├─ chrome-extension/    # Chrome 拡張 (TypeScript, pnpm)
 └─ neovim-plugin/       # Neovim プラグイン (Lua)
 ```
 
 ### Chrome 拡張 (pnpm)
 
 ```bash
+cd chrome-extension
 pnpm install
 pnpm build    # TypeScript の型チェック + bundling
 pnpm lint     # Biome による静的解析
@@ -159,7 +160,7 @@ function openChatGPT(template, selectionText, opts) {
 1. リポジトリをクローン/ダウンロード
 2. Chrome で `chrome://extensions/` を開く
 3. 「デベロッパーモード」をON
-4. 「パッケージ化されていない拡張機能を読み込む」→ 本プロジェクトフォルダを選択
+4. 「パッケージ化されていない拡張機能を読み込む」→ `chrome-extension/` ディレクトリを選択
 
 ---
 
@@ -188,15 +189,17 @@ function openChatGPT(template, selectionText, opts) {
 ## 9. ディレクトリ構成（例）
 
 ```
-/ (root)
+/chrome-extension/
 ├─ manifest.json
+├─ options.html
+├─ popup.html
+├─ scripts/
+│  └─ prebuild.mjs
 ├─ src/
-│  ├─ background.js      # メニュー作成・クリックハンドラ・URL組み立て
-│  ├─ options.html       # テンプレート編集UI
-│  ├─ options.js
-│  ├─ popup.html         # 任意（ワンクリ検索）
-│  ├─ popup.js
-│  └─ lib/urlBuilder.js  # buildChatGPTUrl など
+│  ├─ background/        # メニュー作成・クリックハンドラ・URL組み立て
+│  ├─ content-script/
+│  ├─ pages/options/     # テンプレート編集UI
+│  └─ lib/               # URLビルダーや設定処理
 └─ assets/
    └─ icons/*            # 16/32/48/128px
 ```

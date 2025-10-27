@@ -10,8 +10,7 @@
     "noImplicitAny": true,
     "noUncheckedIndexedAccess": true,
     "noEmitOnError": true,
-    "rootDir": ".",
-    "outDir": "dist",
+    "baseUrl": ".",
     "removeComments": true,
     "resolveJsonModule": true,
     "allowSyntheticDefaultImports": true,
@@ -20,8 +19,8 @@
     "types": ["chrome"],
     "paths": {
       "@/*": ["./src/*"],
-      "@shared/*": ["./shared/ts/*"]
+      "@shared/*": ["../shared/ts/*"]
     }
   },
-  "include": ["src/**/*.ts", "src/**/*.tsx", "shared/ts/**/*.ts"]
+  "include": ["src/**/*.ts", "src/**/*.tsx", "../shared/ts/**/*.ts"]
 }
