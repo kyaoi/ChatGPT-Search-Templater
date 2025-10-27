@@ -1,10 +1,11 @@
-import type { FormEvent, JSX } from 'react';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import type { ChangeEvent, FormEvent, JSX } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   collectTemplateWarnings,
   createTemplateDefaults,
   DEFAULT_SETTINGS,
   normalizeSettings,
+  type ExtensionSettings,
 } from '@shared/settings.js';
 import { loadSettings, saveSettings } from '../../lib/storage.js';
 import {
@@ -28,9 +29,11 @@ export function OptionsApp(): JSX.Element {
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [isResetting, setIsResetting] = useState(false);
+  const [isImporting, setIsImporting] = useState(false);
   const [dirty, setDirty] = useState(false);
   const [statusMessage, setStatusMessage] = useState('');
   const [loadingError, setLoadingError] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
     let mounted = true;
@@ -162,6 +165,72 @@ export function OptionsApp(): JSX.Element {
     [markDirty],
   );
 
+  const handleExport = useCallback(() => {
+    if (!draft) {
+      return;
+    }
+
+    try {
+      const normalized = settingsAdapter.fromDraft(draft);
+      const data = JSON.stringify(normalized, null, 2);
+      const blob = new Blob([data], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const timestamp = new Date()
+        .toISOString()
+        .replace(/[:.]/g, '-');
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `chatgpt-search-templater-settings-${timestamp}.json`;
+      document.body.append(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+      setStatusMessage('設定をエクスポートしました。');
+      setLoadingError(null);
+    } catch (error) {
+      console.error(error);
+      window.alert('設定のエクスポートに失敗しました。');
+    }
+  }, [draft]);
+
+  const handleImportClick = useCallback(() => {
+    fileInputRef.current?.click();
+  }, []);
+
+  const handleImportFileChange = useCallback(
+    async (event: ChangeEvent<HTMLInputElement>) => {
+      const file = event.target.files?.[0];
+      event.target.value = '';
+
+      if (!file) {
+        return;
+      }
+
+      setIsImporting(true);
+      try {
+        const text = await file.text();
+        const parsed = JSON.parse(text) as unknown;
+        const normalized = normalizeSettings(
+          parsed as Partial<ExtensionSettings> | undefined,
+        );
+        const nextDraft = settingsAdapter.toDraft(normalized);
+        setDraft(nextDraft);
+        setSelectedTemplateId(ensureTemplateSelection(nextDraft, null));
+        setDirty(true);
+        setStatusMessage('設定をインポートしました。保存して適用してください。');
+        setLoadingError(null);
+      } catch (error) {
+        console.error(error);
+        window.alert(
+          '設定ファイルの読み込みに失敗しました。JSON形式のファイルを指定してください。',
+        );
+      } finally {
+        setIsImporting(false);
+      }
+    },
+    [settingsAdapter],
+  );
+
   const handleSubmit = useCallback(
     async (event: FormEvent<HTMLFormElement>) => {
       event.preventDefault();
@@ -234,7 +303,12 @@ export function OptionsApp(): JSX.Element {
   }, [draft]);
 
   const statusText =
-    loadingError ?? (dirty ? '未保存の変更があります。' : statusMessage);
+    loadingError ??
+    (statusMessage
+      ? statusMessage
+      : dirty
+        ? '未保存の変更があります。'
+        : '');
 
   return (
     <div className="min-h-screen bg-[radial-gradient(160%_120%_at_10%_20%,rgba(56,189,248,0.12),transparent),_radial-gradient(100%_140%_at_90%_0%,rgba(129,140,248,0.16),transparent),_linear-gradient(180deg,#f5f7ff,#ffffff)] text-[#334155]">
@@ -283,8 +357,20 @@ export function OptionsApp(): JSX.Element {
                   statusText={statusText}
                   isSaving={isSaving}
                   isResetting={isResetting}
+                  isImporting={isImporting}
                   onReset={() => {
                     void handleReset();
+                  }}
+                  onImport={handleImportClick}
+                  onExport={handleExport}
+                />
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="application/json"
+                  className="hidden"
+                  onChange={(event) => {
+                    void handleImportFileChange(event);
                   }}
                 />
               </div>
