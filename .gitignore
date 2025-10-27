@@ -30,3 +30,4 @@ pnpm-debug.log*
 *.log
 .cache/
 .turbo/
+dist
