@@ -1,4 +1,4 @@
-import type { TemplateSettings } from '../../lib/settings.js';
+import type { TemplateSettings } from '@shared/settings.js';
 
 export type TemplateDraft = Omit<TemplateSettings, 'customModel'> & {
   customModel: string;
