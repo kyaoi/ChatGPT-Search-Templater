@@ -3,6 +3,7 @@ import {
   DEFAULT_TEMPLATE_URL,
   hasPlaceholder,
 } from './urlBuilder.js';
+import { sharedSpec } from './spec.js';
 
 export type TemplateModelOption =
   | 'gpt-4o'
@@ -29,16 +30,11 @@ export interface ExtensionSettings {
   parentMenuTitle: string;
 }
 
-export const DEFAULT_HARD_LIMIT = 3000;
-export const DEFAULT_PARENT_MENU_TITLE = 'ChatGPTで検索';
+export const DEFAULT_HARD_LIMIT = sharedSpec.defaultHardLimit;
+export const DEFAULT_PARENT_MENU_TITLE = sharedSpec.defaultParentMenuTitle;
 
-const TEMPLATE_MODEL_OPTIONS: readonly TemplateModelOption[] = [
-  'gpt-4o',
-  'o3',
-  'gpt-5',
-  'gpt-5-thinking',
-  'custom',
-];
+const TEMPLATE_MODEL_OPTIONS =
+  sharedSpec.templateModelOptions as readonly TemplateModelOption[];
 
 export function isTemplateModelOption(value: unknown): value is TemplateModelOption {
   return (
@@ -47,21 +43,31 @@ export function isTemplateModelOption(value: unknown): value is TemplateModelOpt
   );
 }
 
+const DEFAULT_TEMPLATE_BLUEPRINT = sharedSpec.defaultTemplates[0];
+
 const TEMPLATE_BLUEPRINT: Omit<TemplateSettings, 'id'> = {
-  label: '標準検索',
-  url: DEFAULT_TEMPLATE_URL,
-  queryTemplate: DEFAULT_QUERY_TEMPLATE,
-  enabled: true,
-  hintsSearch: false,
-  temporaryChat: false,
-  model: 'gpt-5',
+  label: DEFAULT_TEMPLATE_BLUEPRINT?.label ?? '標準検索',
+  url: DEFAULT_TEMPLATE_BLUEPRINT?.url ?? DEFAULT_TEMPLATE_URL,
+  queryTemplate:
+    DEFAULT_TEMPLATE_BLUEPRINT?.queryTemplate ?? DEFAULT_QUERY_TEMPLATE,
+  enabled: DEFAULT_TEMPLATE_BLUEPRINT?.enabled ?? true,
+  hintsSearch: DEFAULT_TEMPLATE_BLUEPRINT?.hintsSearch ?? false,
+  temporaryChat: DEFAULT_TEMPLATE_BLUEPRINT?.temporaryChat ?? false,
+  model: (DEFAULT_TEMPLATE_BLUEPRINT?.model ?? 'gpt-5') as TemplateModelOption,
+  customModel: DEFAULT_TEMPLATE_BLUEPRINT?.customModel,
 };
 
 function createTemplateFallback(): TemplateSettings {
-  return {
+  const fallback: TemplateSettings = {
     id: generateTemplateId(),
     ...TEMPLATE_BLUEPRINT,
   };
+
+  if (!fallback.customModel) {
+    delete fallback.customModel;
+  }
+
+  return fallback;
 }
 
 function sanitizeTemplate(
@@ -190,17 +196,15 @@ export function createTemplateDefaults(
   return sanitizeTemplate(undefined, fallback);
 }
 
-export const DEFAULT_TEMPLATES: TemplateSettings[] = [
-  createTemplateDefaults({ id: 'template-1' }),
-  createTemplateDefaults({
-    id: 'template-2',
-    label: 'Search + Temporary',
-    enabled: false,
-    hintsSearch: true,
-    temporaryChat: true,
-    model: 'gpt-5-thinking',
-  }),
-];
+export const DEFAULT_TEMPLATES: TemplateSettings[] = sharedSpec.defaultTemplates.map(
+  (template) =>
+    createTemplateDefaults({
+      ...template,
+      model: isTemplateModelOption(template.model)
+        ? template.model
+        : TEMPLATE_BLUEPRINT.model,
+    }),
+);
 
 export const DEFAULT_SETTINGS: ExtensionSettings = {
   templates: DEFAULT_TEMPLATES.map((template) => ({ ...template })),

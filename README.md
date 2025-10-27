@@ -2,6 +2,35 @@
 
 選択テキストをテンプレートURLに挿入して **chatgpt.com** を開く Chrome 拡張（Manifest v3）。
 
+## 0. リポジトリ構成とビルド/テスト
+
+本リポジトリは Chrome 拡張と Neovim プラグインの 2 つのプロジェクトを含むモノレポです。
+
+```
+/ (root)
+├─ shared/              # 拡張とプラグインで共通利用するテンプレート仕様
+├─ src/                 # Chrome 拡張 (TypeScript)
+└─ neovim-plugin/       # Neovim プラグイン (Lua)
+```
+
+### Chrome 拡張 (pnpm)
+
+```bash
+pnpm install
+pnpm build    # TypeScript の型チェック + bundling
+pnpm lint     # Biome による静的解析
+```
+
+### Neovim プラグイン (make)
+
+```bash
+cd neovim-plugin
+make check    # Neovim headless モードによるスモークテスト
+```
+
+`shared/spec.json` にテンプレート仕様をまとめており、Chrome 拡張と Neovim
+プラグインの両方から同じデータを参照できます。
+
 > **現状の方針**
 >
 > * 文字列が“長すぎる”場合は **アラート表示のみ** で検索は実行しません（将来的に課金ユーザー向けに自動検索フォールバックを提供予定）。

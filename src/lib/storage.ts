@@ -1,4 +1,4 @@
-import { type ExtensionSettings, normalizeSettings } from './settings.js';
+import { type ExtensionSettings, normalizeSettings } from '@shared/settings.js';
 
 const STORAGE_KEY = 'chatgpt-search-templater/settings';
 

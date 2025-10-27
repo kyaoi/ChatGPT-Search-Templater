@@ -3,9 +3,9 @@ import {
   type ExtensionSettings,
   resolveModelId,
   type TemplateSettings,
-} from '../lib/settings.js';
+} from '@shared/settings.js';
 import { ensureDefaults, observeSettings } from '../lib/storage.js';
-import { buildChatGPTUrl } from '../lib/urlBuilder.js';
+import { buildChatGPTUrl } from '@shared/urlBuilder.js';
 
 interface ContextMenuClickInfo {
   menuItemId: string | number;

@@ -10,17 +10,18 @@
     "noImplicitAny": true,
     "noUncheckedIndexedAccess": true,
     "noEmitOnError": true,
-    "rootDir": "src",
+    "rootDir": ".",
     "outDir": "dist",
     "removeComments": true,
-    "resolveJsonModule": false,
+    "resolveJsonModule": true,
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
     "types": ["chrome"],
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "@shared/*": ["./shared/ts/*"]
     }
   },
-  "include": ["src/**/*.ts", "src/**/*.tsx"]
+  "include": ["src/**/*.ts", "src/**/*.tsx", "shared/ts/**/*.ts"]
 }

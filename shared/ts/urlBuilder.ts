@@ -1,7 +1,10 @@
-export const PLACEHOLDER_VARIANTS = ['{選択した文字列}', '{TEXT}'] as const;
+import { sharedSpec } from './spec.js';
 
-export const DEFAULT_TEMPLATE_URL = 'https://chatgpt.com/?q={TEXT}';
-export const DEFAULT_QUERY_TEMPLATE = '{TEXT}';
+export const PLACEHOLDER_VARIANTS =
+  sharedSpec.placeholders as readonly string[];
+
+export const DEFAULT_TEMPLATE_URL = sharedSpec.defaultTemplateUrl;
+export const DEFAULT_QUERY_TEMPLATE = sharedSpec.defaultQueryTemplate;
 
 export type PlaceholderToken = (typeof PLACEHOLDER_VARIANTS)[number];
 
@@ -52,10 +55,7 @@ function maskLiteralPlaceholders(template: string): {
   };
 }
 
-export function applyPlaceholders(
-  template: string,
-  replacement: string,
-): string {
+export function applyPlaceholders(template: string, replacement: string): string {
   const { masked, restore } = maskLiteralPlaceholders(template);
 
   const substituted = PLACEHOLDER_VARIANTS.reduce(
@@ -76,10 +76,7 @@ export function hasPlaceholder(value: string): boolean {
       if (!isEscaped) {
         return true;
       }
-      searchStart = value.indexOf(
-        placeholder,
-        searchStart + placeholder.length,
-      );
+      searchStart = value.indexOf(placeholder, searchStart + placeholder.length);
     }
     return false;
   });

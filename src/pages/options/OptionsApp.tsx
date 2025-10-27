@@ -5,7 +5,7 @@ import {
   createTemplateDefaults,
   DEFAULT_SETTINGS,
   normalizeSettings,
-} from '../../lib/settings.js';
+} from '@shared/settings.js';
 import { loadSettings, saveSettings } from '../../lib/storage.js';
 import {
   ensureTemplateSelection,

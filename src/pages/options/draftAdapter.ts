@@ -4,8 +4,8 @@ import {
   normalizeSettings,
   resolveModelId,
   type TemplateSettings,
-} from '../../lib/settings.js';
-import { buildChatGPTUrl } from '../../lib/urlBuilder.js';
+} from '@shared/settings.js';
+import { buildChatGPTUrl } from '@shared/urlBuilder.js';
 import type {
   SettingsDraft,
   TemplateDraft,
