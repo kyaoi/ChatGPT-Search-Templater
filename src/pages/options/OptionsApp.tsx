@@ -228,7 +228,7 @@ export function OptionsApp(): JSX.Element {
         setIsImporting(false);
       }
     },
-    [],
+    [settingsAdapter],
   );
 
   const handleSubmit = useCallback(
