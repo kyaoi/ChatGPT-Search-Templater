@@ -17,7 +17,7 @@ Add the repository to your Neovim plugin manager. Example using
 
 ```lua
 {
-  'your-user/chatgpt-search-templater',
+  'kyaoi/chatgpt-search-templater',
   dir = vim.fn.stdpath('config') .. '/plugins/chatgpt-search-templater',
   config = function()
     require('chatgpt_search_templater').setup()
