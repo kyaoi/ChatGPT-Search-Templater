@@ -107,6 +107,41 @@ export function OptionsApp(): JSX.Element {
     }
   }, [markDirty]);
 
+  const handleTemplateRemove = useCallback(
+    (templateId: string) => {
+      let removed = false;
+      let nextSelectedId: string | null = selectedTemplateId;
+
+      setDraft((current) => {
+        if (!current) {
+          return current;
+        }
+        const nextTemplates = current.templates.filter(
+          (template) => template.id !== templateId,
+        );
+        if (nextTemplates.length === current.templates.length) {
+          return current;
+        }
+        removed = true;
+        const nextDraft: SettingsDraft = {
+          ...current,
+          templates: nextTemplates,
+        };
+        nextSelectedId = ensureTemplateSelection(
+          nextDraft,
+          selectedTemplateId === templateId ? null : selectedTemplateId,
+        );
+        return nextDraft;
+      });
+
+      if (removed) {
+        setSelectedTemplateId(nextSelectedId);
+        markDirty();
+      }
+    },
+    [markDirty, selectedTemplateId],
+  );
+
   const handleTemplateSelect = useCallback((templateId: string) => {
     setSelectedTemplateId(templateId);
     setStatusMessage('');
@@ -234,6 +269,7 @@ export function OptionsApp(): JSX.Element {
                       onChange={(updater) =>
                         handleTemplateChange(selectedTemplate.id, updater)
                       }
+                      onRemove={handleTemplateRemove}
                     />
                   ) : (
                     <div className="rounded-[24px] border border-dashed border-[rgba(129,140,248,0.6)] bg-[rgba(255,255,255,0.5)] p-9 text-center text-[14px] text-[#475569]">
