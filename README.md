@@ -1,11 +1,10 @@
-# ChatGPT Search Templater
+# ChatGPT Search Templater (Chrome Extension)
 
-ChatGPT Search Templater は、Chrome 拡張機能と Neovim プラグインで共通の検索テンプレート仕様を共有するモノレポです。
+このリポジトリは ChatGPT Search Templater の Chrome 拡張機能を管理します。
+Neovim プラグインは `~/develop/NeoVimPlugins/Search-Templater` へ移動しました。
 
-## Projects
+## 構成
 
-- `chrome-extension/` — ChatGPT Search Templater Chrome 拡張機能。詳細は各ディレクトリの README を参照してください。
-- `neovim-plugin/` — Neovim からテンプレートを利用できるプラグイン。
-- `shared/` — 両プロジェクトで共通利用するテンプレート仕様とユーティリティ。
+- `chrome-extension/` — Chrome 拡張機能本体。`shared/` ディレクトリも同梱されています。
 
-詳細な使い方やビルド手順はそれぞれのプロジェクト内のドキュメントを参照してください。
+セットアップやビルド方法は `chrome-extension/README.md` を参照してください。

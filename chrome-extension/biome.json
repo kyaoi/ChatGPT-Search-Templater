@@ -3,7 +3,7 @@
   "files": {
     "includes": [
       "src/**/*",
-      "../shared/ts/**/*",
+      "shared/ts/**/*",
       "package.json",
       "tsconfig.json",
       "tsup.config.ts",

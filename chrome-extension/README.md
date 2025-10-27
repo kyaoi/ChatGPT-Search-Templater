@@ -20,7 +20,7 @@ chrome-extension/
    └─ icons/*            # 16/32/48/128px
 ```
 
-テンプレート仕様や URL ビルダーなどの共通ロジックはリポジトリ直下の `shared/` に配置されています。TypeScript からは `../shared/ts/*` として参照します。
+テンプレート仕様や URL ビルダーなどの共通ロジックは `chrome-extension/shared/` に配置されています。TypeScript からは `@shared/*`（`shared/ts/*`）として参照します。
 
 ## セットアップとビルド
 
