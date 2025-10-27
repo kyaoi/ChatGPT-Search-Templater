@@ -60,12 +60,12 @@ function M.load()
   local spec_path = resolve_spec_path()
   local content, err = read_file(spec_path)
   if not content then
-    error(('chatgpt-search-templater: failed to read spec file %s: %s'):format(spec_path, err))
+    error(('chatgpt_search_templater: failed to read spec file %s: %s'):format(spec_path, err))
   end
 
   local ok, decoded = pcall(vim.json.decode, content)
   if not ok then
-    error(('chatgpt-search-templater: invalid JSON in %s: %s'):format(spec_path, decoded))
+    error(('chatgpt_search_templater: invalid JSON in %s: %s'):format(spec_path, decoded))
   end
 
   cached_spec = decoded
