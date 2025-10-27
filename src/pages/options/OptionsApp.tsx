@@ -308,7 +308,7 @@ export function OptionsApp(): JSX.Element {
       ? statusMessage
       : dirty
         ? '未保存の変更があります。'
-        : statusMessage);
+        : '');
 
   return (
     <div className="min-h-screen bg-[radial-gradient(160%_120%_at_10%_20%,rgba(56,189,248,0.12),transparent),_radial-gradient(100%_140%_at_90%_0%,rgba(129,140,248,0.16),transparent),_linear-gradient(180deg,#f5f7ff,#ffffff)] text-[#334155]">
