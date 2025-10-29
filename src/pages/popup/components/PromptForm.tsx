@@ -56,7 +56,10 @@ export function PromptForm({
         <span>{isSubmitting ? '送信中…' : 'ChatGPT を開く'}</span>
       </button>
 
-      <p className="min-h-5 text-center text-sm text-slate-500" id="statusMessage">
+      <p
+        className="min-h-5 text-center text-sm text-slate-500"
+        id="statusMessage"
+      >
         {statusText}
       </p>
     </form>

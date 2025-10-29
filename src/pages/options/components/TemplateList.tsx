@@ -72,7 +72,9 @@ export function TemplateList({
         テンプレートを追加
       </button>
       <div className="border-t border-[rgba(148,163,184,0.3)] pt-4 text-[12px] leading-[1.6] text-[#475569]">
-        <p>テンプレートの保存内容は即時反映されます。ブラウザの再読み込みは不要です。</p>
+        <p>
+          テンプレートの保存内容は即時反映されます。ブラウザの再読み込みは不要です。
+        </p>
       </div>
     </aside>
   );

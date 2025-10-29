@@ -1,9 +1,9 @@
+import { sharedSpec } from './spec.js';
 import {
   DEFAULT_QUERY_TEMPLATE,
   DEFAULT_TEMPLATE_URL,
   hasPlaceholder,
 } from './urlBuilder.js';
-import { sharedSpec } from './spec.js';
 
 export type TemplateModelOption =
   | 'gpt-4o'
@@ -36,7 +36,9 @@ export const DEFAULT_PARENT_MENU_TITLE = sharedSpec.defaultParentMenuTitle;
 const TEMPLATE_MODEL_OPTIONS =
   sharedSpec.templateModelOptions as readonly TemplateModelOption[];
 
-export function isTemplateModelOption(value: unknown): value is TemplateModelOption {
+export function isTemplateModelOption(
+  value: unknown,
+): value is TemplateModelOption {
   return (
     typeof value === 'string' &&
     TEMPLATE_MODEL_OPTIONS.some((option) => option === value)
@@ -79,8 +81,7 @@ function sanitizeTemplate(
     typeof source.label === 'string' ? source.label.trim() : '';
   const label = labelCandidate.length > 0 ? labelCandidate : fallback.label;
 
-  const urlCandidate =
-    typeof source.url === 'string' ? source.url.trim() : '';
+  const urlCandidate = typeof source.url === 'string' ? source.url.trim() : '';
   const url = urlCandidate.length > 0 ? urlCandidate : fallback.url;
 
   const queryTemplate =
@@ -109,7 +110,7 @@ function sanitizeTemplate(
     model === 'custom'
       ? typeof source.customModel === 'string'
         ? source.customModel.trim()
-        : fallback.customModel ?? ''
+        : (fallback.customModel ?? '')
       : undefined;
 
   const idCandidate =
@@ -136,13 +137,21 @@ function sanitizeTemplate(
 }
 
 export function generateTemplateId(): string {
-  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+  if (
+    typeof crypto !== 'undefined' &&
+    typeof crypto.randomUUID === 'function'
+  ) {
     return `template-${crypto.randomUUID()}`;
-  } else if (typeof crypto !== 'undefined' && typeof crypto.getRandomValues === 'function') {
+  } else if (
+    typeof crypto !== 'undefined' &&
+    typeof crypto.getRandomValues === 'function'
+  ) {
     // Fallback: generate a random 8-character hex string
     const array = new Uint32Array(2);
     crypto.getRandomValues(array);
-    const random = Array.from(array).map((n) => n.toString(16).padStart(8, '0')).join('');
+    const random = Array.from(array)
+      .map((n) => n.toString(16).padStart(8, '0'))
+      .join('');
     const timestamp = Date.now().toString(36);
     return `template-${timestamp}-${random}`;
   } else {
@@ -196,15 +205,15 @@ export function createTemplateDefaults(
   return sanitizeTemplate(undefined, fallback);
 }
 
-export const DEFAULT_TEMPLATES: TemplateSettings[] = sharedSpec.defaultTemplates.map(
-  (template) =>
+export const DEFAULT_TEMPLATES: TemplateSettings[] =
+  sharedSpec.defaultTemplates.map((template) =>
     createTemplateDefaults({
       ...template,
       model: isTemplateModelOption(template.model)
         ? template.model
         : TEMPLATE_BLUEPRINT.model,
     }),
-);
+  );
 
 export const DEFAULT_SETTINGS: ExtensionSettings = {
   templates: DEFAULT_TEMPLATES.map((template) => ({ ...template })),
@@ -239,8 +248,7 @@ function normalizeTemplates(
   const seenIds = new Set<string>();
 
   return templates.map((template, index) => {
-    const fallback =
-      DEFAULT_TEMPLATES[index] ?? createTemplateDefaults();
+    const fallback = DEFAULT_TEMPLATES[index] ?? createTemplateDefaults();
     const normalized = sanitizeTemplate(template, fallback);
 
     let id = normalized.id.trim();
@@ -251,7 +259,9 @@ function normalizeTemplates(
         id = generateTemplateId();
         attempts++;
         if (attempts >= MAX_ID_ATTEMPTS) {
-          throw new Error('Failed to generate a unique template ID after 1000 attempts.');
+          throw new Error(
+            'Failed to generate a unique template ID after 1000 attempts.',
+          );
         }
       } while (seenIds.has(id));
     }

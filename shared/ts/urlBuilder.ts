@@ -55,7 +55,10 @@ function maskLiteralPlaceholders(template: string): {
   };
 }
 
-export function applyPlaceholders(template: string, replacement: string): string {
+export function applyPlaceholders(
+  template: string,
+  replacement: string,
+): string {
   const { masked, restore } = maskLiteralPlaceholders(template);
 
   const substituted = PLACEHOLDER_VARIANTS.reduce(
@@ -76,7 +79,10 @@ export function hasPlaceholder(value: string): boolean {
       if (!isEscaped) {
         return true;
       }
-      searchStart = value.indexOf(placeholder, searchStart + placeholder.length);
+      searchStart = value.indexOf(
+        placeholder,
+        searchStart + placeholder.length,
+      );
     }
     return false;
   });

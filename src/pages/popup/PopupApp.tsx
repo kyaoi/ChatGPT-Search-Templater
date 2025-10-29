@@ -1,10 +1,5 @@
 import type { FormEvent, JSX } from 'react';
-import {
-  useCallback,
-  useEffect,
-  useMemo,
-  useState,
-} from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { loadSettings } from '../../lib/storage.js';
 import { executeTemplate } from './api.js';
 import { HeroSection } from './components/HeroSection.js';

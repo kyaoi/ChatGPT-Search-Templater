@@ -4,8 +4,8 @@ import {
   resolveModelId,
   type TemplateSettings,
 } from '@shared/settings.js';
-import { ensureDefaults, observeSettings } from '../lib/storage.js';
 import { buildChatGPTUrl } from '@shared/urlBuilder.js';
+import { ensureDefaults, observeSettings } from '../lib/storage.js';
 
 interface ContextMenuClickInfo {
   menuItemId: string | number;

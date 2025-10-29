@@ -36,9 +36,7 @@ function isAlertMessage(value: unknown): value is AlertMessage {
   }
   const { type, message } = value;
   return (
-    typeof type === 'string' &&
-    type === 'alert' &&
-    typeof message === 'string'
+    typeof type === 'string' && type === 'alert' && typeof message === 'string'
   );
 }
 

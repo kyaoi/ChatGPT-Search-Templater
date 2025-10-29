@@ -91,8 +91,12 @@ export function TemplateListPanel({
       <section className="flex flex-col gap-3 rounded-[22px] border border-[rgba(148,163,184,0.2)] bg-[rgba(255,255,255,0.9)] px-4 py-4 shadow-[0_20px_45px_-32px_rgba(15,23,42,0.45)] md:hidden">
         <div className="flex items-center justify-between gap-3">
           <div className="min-w-0">
-            <p className="text-[11px] uppercase tracking-[0.28em] text-[#64748b]">テンプレート</p>
-            <h2 className="mt-1 text-[1.1rem] font-semibold text-[#0f172a]">クイックリスト</h2>
+            <p className="text-[11px] uppercase tracking-[0.28em] text-[#64748b]">
+              テンプレート
+            </p>
+            <h2 className="mt-1 text-[1.1rem] font-semibold text-[#0f172a]">
+              クイックリスト
+            </h2>
           </div>
           <button
             type="button"
@@ -109,9 +113,15 @@ export function TemplateListPanel({
 
       <section className="hidden min-w-0 flex-col gap-4 rounded-[28px] border border-[rgba(148,163,184,0.28)] bg-[rgba(255,255,255,0.82)] p-5 shadow-[0_26px_60px_-44px_rgba(30,41,59,0.55)] md:flex md:sticky md:top-0 md:self-start">
         <div className="flex flex-col gap-[6px]">
-          <p className="text-[11px] uppercase tracking-[0.28em] text-[#64748b]">テンプレート</p>
-          <h2 className="text-[1.25rem] font-semibold text-[#0f172a]">クイックリスト</h2>
-          <p className="text-[13px] leading-[1.6] text-[#475569]">使用したいテンプレートを選んでください。</p>
+          <p className="text-[11px] uppercase tracking-[0.28em] text-[#64748b]">
+            テンプレート
+          </p>
+          <h2 className="text-[1.25rem] font-semibold text-[#0f172a]">
+            クイックリスト
+          </h2>
+          <p className="text-[13px] leading-[1.6] text-[#475569]">
+            使用したいテンプレートを選んでください。
+          </p>
         </div>
         <div className="flex flex-col gap-2.5">{renderCardButtons()}</div>
         <button

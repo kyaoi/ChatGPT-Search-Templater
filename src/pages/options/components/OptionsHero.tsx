@@ -17,8 +17,12 @@ export function OptionsHero(): JSX.Element {
       <div className="max-w-[320px] self-start rounded-[20px] border border-[rgba(255,255,255,0.3)] bg-[rgba(255,255,255,0.15)] px-5 py-[18px] text-[rgba(226,232,240,0.85)] lg:self-end">
         <p className="text-[14px] font-semibold text-white">ヒント</p>
         <ul className="mt-3 grid gap-[10px] list-disc pl-[18px] text-[13px] text-[rgba(226,232,240,0.85)]">
-          <li>テンプレートはオン・オフを切り替えつつプレビューで即確認できます。</li>
-          <li>「検索ヒント」「一時チャット」を組み合わせると、最新ChatGPTの検索挙動を最適化できます。</li>
+          <li>
+            テンプレートはオン・オフを切り替えつつプレビューで即確認できます。
+          </li>
+          <li>
+            「検索ヒント」「一時チャット」を組み合わせると、最新ChatGPTの検索挙動を最適化できます。
+          </li>
         </ul>
       </div>
     </header>

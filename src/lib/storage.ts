@@ -37,7 +37,10 @@ export function observeSettings(
   callback: (settings: ExtensionSettings) => void,
 ): void {
   chrome.storage.onChanged.addListener(
-    (changes: Record<string, chrome.storage.StorageChange>, areaName: string) => {
+    (
+      changes: Record<string, chrome.storage.StorageChange>,
+      areaName: string,
+    ) => {
       if (areaName !== 'sync') {
         return;
       }

@@ -6,11 +6,7 @@ import {
   type TemplateSettings,
 } from '@shared/settings.js';
 import { buildChatGPTUrl } from '@shared/urlBuilder.js';
-import type {
-  SettingsDraft,
-  TemplateDraft,
-  TemplateUpdater,
-} from './types.js';
+import type { SettingsDraft, TemplateDraft, TemplateUpdater } from './types.js';
 
 const SAMPLE_TEXT = '日本の大規模言語モデル事情';
 

@@ -1,8 +1,8 @@
+import { isTemplateModelOption } from '@shared/settings.js';
 import type { ChangeEvent, JSX } from 'react';
 import { useCallback, useMemo } from 'react';
-import type { TemplateDraft, TemplateUpdater } from '../types.js';
 import { templatePreview } from '../draftAdapter.js';
-import { isTemplateModelOption } from '@shared/settings.js';
+import type { TemplateDraft, TemplateUpdater } from '../types.js';
 
 interface TemplateEditorProps {
   template: TemplateDraft;

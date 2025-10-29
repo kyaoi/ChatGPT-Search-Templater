@@ -1,13 +1,18 @@
-import type { ChangeEvent, FormEvent, JSX } from 'react';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   collectTemplateWarnings,
   createTemplateDefaults,
   DEFAULT_SETTINGS,
-  normalizeSettings,
   type ExtensionSettings,
+  normalizeSettings,
 } from '@shared/settings.js';
+import type { ChangeEvent, FormEvent, JSX } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { loadSettings, saveSettings } from '../../lib/storage.js';
+import { ActionBar } from './components/ActionBar.js';
+import { GeneralSettingsSection } from './components/GeneralSettingsSection.js';
+import { OptionsHero } from './components/OptionsHero.js';
+import { TemplateEditor } from './components/TemplateEditor.js';
+import { TemplateList } from './components/TemplateList.js';
 import {
   ensureTemplateSelection,
   getSelectedTemplate,
@@ -15,11 +20,6 @@ import {
   updateTemplateDraft,
 } from './draftAdapter.js';
 import type { SettingsDraft, TemplateDraft, TemplateUpdater } from './types.js';
-import { ActionBar } from './components/ActionBar.js';
-import { GeneralSettingsSection } from './components/GeneralSettingsSection.js';
-import { OptionsHero } from './components/OptionsHero.js';
-import { TemplateEditor } from './components/TemplateEditor.js';
-import { TemplateList } from './components/TemplateList.js';
 
 export function OptionsApp(): JSX.Element {
   const [draft, setDraft] = useState<SettingsDraft | null>(null);
@@ -175,9 +175,7 @@ export function OptionsApp(): JSX.Element {
       const data = JSON.stringify(normalized, null, 2);
       const blob = new Blob([data], { type: 'application/json' });
       const url = URL.createObjectURL(blob);
-      const timestamp = new Date()
-        .toISOString()
-        .replace(/[:.]/g, '-');
+      const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
       const link = document.createElement('a');
       link.href = url;
       link.download = `chatgpt-search-templater-settings-${timestamp}.json`;
@@ -217,7 +215,9 @@ export function OptionsApp(): JSX.Element {
         setDraft(nextDraft);
         setSelectedTemplateId(ensureTemplateSelection(nextDraft, null));
         setDirty(true);
-        setStatusMessage('設定をインポートしました。保存して適用してください。');
+        setStatusMessage(
+          '設定をインポートしました。保存して適用してください。',
+        );
         setLoadingError(null);
       } catch (error) {
         console.error(error);
@@ -228,7 +228,7 @@ export function OptionsApp(): JSX.Element {
         setIsImporting(false);
       }
     },
-    [settingsAdapter],
+    [],
   );
 
   const handleSubmit = useCallback(
@@ -304,11 +304,7 @@ export function OptionsApp(): JSX.Element {
 
   const statusText =
     loadingError ??
-    (statusMessage
-      ? statusMessage
-      : dirty
-        ? '未保存の変更があります。'
-        : '');
+    (statusMessage ? statusMessage : dirty ? '未保存の変更があります。' : '');
 
   return (
     <div className="min-h-screen bg-[radial-gradient(160%_120%_at_10%_20%,rgba(56,189,248,0.12),transparent),_radial-gradient(100%_140%_at_90%_0%,rgba(129,140,248,0.16),transparent),_linear-gradient(180deg,#f5f7ff,#ffffff)] text-[#334155]">
