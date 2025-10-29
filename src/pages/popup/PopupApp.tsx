@@ -1,116 +1,53 @@
 import type { FormEvent, JSX } from 'react';
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import { loadSettings } from '../../lib/storage.js';
-import { executeTemplate } from './api.js';
+import { useCallback } from 'react';
 import { HeroSection } from './components/HeroSection.js';
 import { PromptForm } from './components/PromptForm.js';
 import { TemplateListPanel } from './components/TemplateListPanel.js';
-import type { TemplateOption } from './types.js';
+import { usePopupController } from './hooks/usePopupController.js';
 
 export function PopupApp(): JSX.Element {
-  const [templates, setTemplates] = useState<TemplateOption[]>([]);
-  const [selectedTemplateId, setSelectedTemplateId] = useState('');
-  const [inputText, setInputText] = useState('');
-  const [statusMessage, setStatusMessage] = useState('');
-  const [isLoading, setIsLoading] = useState(true);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const {
+    templates,
+    selectedTemplateId,
+    selectedTemplate: activeTemplate,
+    inputText,
+    statusText,
+    isLoading,
+    isSubmitting,
+    hasTemplates,
+    setInputText,
+    selectTemplate,
+    submit,
+    openOptionsPage,
+  } = usePopupController();
 
-  useEffect(() => {
-    let mounted = true;
-    void loadSettings()
-      .then((settings) => {
-        if (!mounted) {
-          return;
-        }
-        const enabledTemplates = settings.templates
-          .filter((template) => template.enabled)
-          .map((template) => ({ id: template.id, label: template.label }));
-        setTemplates(enabledTemplates);
-        setSelectedTemplateId(
-          (current) => current || enabledTemplates[0]?.id || '',
-        );
-      })
-      .catch((error) => {
-        console.error(error);
-        if (mounted) {
-          setStatusMessage('設定の読み込みに失敗しました。');
-        }
-      })
-      .finally(() => {
-        if (mounted) {
-          setIsLoading(false);
-        }
-      });
-    return () => {
-      mounted = false;
-    };
-  }, []);
-
-  const templateOptions = useMemo(() => templates, [templates]);
-  const selectedTemplate = useMemo(
-    () =>
-      templateOptions.find((template) => template.id === selectedTemplateId) ??
-      null,
-    [templateOptions, selectedTemplateId],
-  );
-  const hasTemplates = templateOptions.length > 0;
+  const templateOptions = templates;
 
   const handleSubmit = useCallback(
     async (event: FormEvent<HTMLFormElement>) => {
       event.preventDefault();
-      setStatusMessage('');
-
-      if (!selectedTemplateId) {
-        setStatusMessage(
-          'テンプレートが選択できません。オプションから有効化してください。',
-        );
-        return;
-      }
-
-      const trimmed = inputText.trim();
-      if (!trimmed) {
-        setStatusMessage('テキストを入力してください。');
-        return;
-      }
-
-      setIsSubmitting(true);
-      try {
-        const response = await executeTemplate(selectedTemplateId, trimmed);
-        if (!response.success) {
-          if (response.reason === 'hard-limit-exceeded') {
-            setStatusMessage('URLが長すぎるためキャンセルしました。');
-          } else if (response.reason === 'not-found') {
-            setStatusMessage('テンプレートが見つかりません。');
-          } else {
-            setStatusMessage('実行中に問題が発生しました。');
-          }
-          return;
-        }
-        setStatusMessage('ChatGPT を開きました。');
-      } catch (error) {
-        console.error(error);
-        setStatusMessage('実行中にエラーが発生しました。');
-      } finally {
-        setIsSubmitting(false);
-      }
+      await submit();
     },
-    [inputText, selectedTemplateId],
+    [submit],
   );
 
-  const handleTemplateSelect = useCallback((templateId: string) => {
-    setSelectedTemplateId(templateId);
-    setStatusMessage('');
-  }, []);
+  const handleTemplateSelect = useCallback(
+    (templateId: string) => {
+      selectTemplate(templateId);
+    },
+    [selectTemplate],
+  );
 
-  const handleInputChange = useCallback((value: string) => {
-    setInputText(value);
-  }, []);
+  const handleInputChange = useCallback(
+    (value: string) => {
+      setInputText(value);
+    },
+    [setInputText],
+  );
 
   const handleOpenOptions = useCallback(() => {
-    chrome.runtime.openOptionsPage();
-  }, []);
-
-  const statusText = isLoading ? '設定を読み込み中…' : statusMessage;
+    openOptionsPage();
+  }, [openOptionsPage]);
 
   return (
     <div className="min-h-full w-full bg-[radial-gradient(140%_120%_at_10%_10%,rgba(56,189,248,0.12),transparent),_radial-gradient(120%_140%_at_90%_0%,rgba(129,140,248,0.14),transparent),_linear-gradient(135deg,#f7f9ff,#eef2ff)] px-4 py-5 text-[#334155] sm:px-6">
@@ -127,7 +64,7 @@ export function PopupApp(): JSX.Element {
           <main className="flex min-w-0 flex-col gap-5">
             <HeroSection />
             <PromptForm
-              selectedTemplateLabel={selectedTemplate?.label ?? null}
+              selectedTemplateLabel={activeTemplate?.label ?? null}
               inputText={inputText}
               onInputChange={handleInputChange}
               onSubmit={handleSubmit}

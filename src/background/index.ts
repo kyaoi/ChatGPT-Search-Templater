@@ -1,3 +1,9 @@
+import type {
+  ExecuteTemplateResponse,
+  RuntimeMessage,
+  SelectionResponsePayload,
+  SendResponse,
+} from '@shared/messages.js';
 import {
   DEFAULT_SETTINGS,
   type ExtensionSettings,
@@ -20,23 +26,9 @@ interface RuntimeMessageSender {
   tab?: ChromeTab;
 }
 
-type SendResponse = (response: { success: boolean; reason?: string }) => void;
-
-interface SelectionResponsePayload {
-  text?: string;
-}
-
 interface ScriptSelectionResult {
   text: string;
 }
-
-interface ExecuteTemplateMessage {
-  type: 'execute-template';
-  templateId: string;
-  text: string;
-}
-
-type RuntimeMessage = ExecuteTemplateMessage;
 
 const MENU_PARENT_ID = 'chatgpt-search-templater:parent';
 const MENU_EDIT_ID = 'chatgpt-search-templater:edit';
@@ -239,7 +231,7 @@ async function executeTemplate(
   selectionText: string,
   hardLimit: number,
   tabId?: number,
-): Promise<{ success: boolean; reason?: string }> {
+): Promise<ExecuteTemplateResponse> {
   const runtimeModel = resolveModelId(template);
   const { url } = buildChatGPTUrl({
     templateUrl: template.url,
@@ -338,7 +330,7 @@ chrome.runtime.onMessage.addListener(
   (
     message: RuntimeMessage,
     sender: RuntimeMessageSender,
-    sendResponse: SendResponse,
+    sendResponse: SendResponse<ExecuteTemplateResponse>,
   ) => {
     if (message?.type === 'execute-template') {
       const template = findTemplateById(currentSettings, message.templateId);

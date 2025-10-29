@@ -3,12 +3,7 @@ export interface TemplateOption {
   label: string;
 }
 
-export type ExecuteTemplateFailureReason =
-  | 'hard-limit-exceeded'
-  | 'not-found'
-  | string;
-
-export interface ExecuteTemplateResponse {
-  success: boolean;
-  reason?: ExecuteTemplateFailureReason;
-}
+export type {
+  ExecuteTemplateFailureReason,
+  ExecuteTemplateResponse,
+} from '@shared/messages.js';

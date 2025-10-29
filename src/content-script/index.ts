@@ -1,16 +1,16 @@
-type SendResponse = (response?: Record<string, unknown>) => void;
-
-interface AlertMessage {
-  type: 'alert';
-  message: string;
-}
-
-interface GetSelectionMessage {
-  type: 'get-selection';
-}
+import type {
+  AlertMessage,
+  GetSelectionMessage,
+  SelectionResponsePayload,
+  SendResponse,
+} from '@shared/messages.js';
 
 chrome.runtime.onMessage.addListener(
-  (message: unknown, _sender: unknown, sendResponse: SendResponse) => {
+  (
+    message: unknown,
+    _sender: unknown,
+    sendResponse: SendResponse<SelectionResponsePayload>,
+  ) => {
     if (isAlertMessage(message)) {
       window.alert(message.message);
       return undefined;
