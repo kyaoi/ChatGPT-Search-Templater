@@ -1,6 +1,7 @@
 import type { FormEvent, JSX } from 'react';
 import { ActionBar } from './components/ActionBar.js';
 import { GeneralSettingsSection } from './components/GeneralSettingsSection.js';
+import { KeyboardShortcutSection } from './components/KeyboardShortcutSection.js';
 import { OptionsHero } from './components/OptionsHero.js';
 import { TemplateEditor } from './components/TemplateEditor.js';
 import { TemplateList } from './components/TemplateList.js';
@@ -59,6 +60,8 @@ export function OptionsApp(): JSX.Element {
                     handleFieldChange('parentMenuTitle', value)
                   }
                 />
+
+                <KeyboardShortcutSection />
 
                 <section className="rounded-[28px]">
                   {selectedTemplate ? (
