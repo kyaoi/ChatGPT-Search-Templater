@@ -11,6 +11,7 @@
       "label": "標準検索",
       "url": "https://chatgpt.com/?q={TEXT}",
       "queryTemplate": "{TEXT}",
+      "default": true,
       "enabled": true,
       "hintsSearch": false,
       "temporaryChat": false,

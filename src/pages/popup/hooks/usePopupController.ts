@@ -61,15 +61,25 @@ export function usePopupController(): {
         }
         const enabledTemplates = settings.templates
           .filter((template) => template.enabled)
-          .map((template) => ({ id: template.id, label: template.label }));
+          .map((template) => ({
+            id: template.id,
+            label: template.label,
+            isDefault: template.isDefault,
+          }));
 
-        setState((current) => ({
-          ...current,
-          templates: enabledTemplates,
-          selectedTemplateId:
-            current.selectedTemplateId || enabledTemplates[0]?.id || '',
-          isLoading: false,
-        }));
+        setState((current) => {
+          const nextSelectedId =
+            current.selectedTemplateId ||
+            enabledTemplates.find((template) => template.isDefault)?.id ||
+            enabledTemplates[0]?.id ||
+            '';
+          return {
+            ...current,
+            templates: enabledTemplates,
+            selectedTemplateId: nextSelectedId,
+            isLoading: false,
+          };
+        });
       } catch (error) {
         console.error(error);
         if (mounted) {

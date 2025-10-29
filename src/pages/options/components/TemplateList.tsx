@@ -49,6 +49,11 @@ export function TemplateList({
                 <span className="min-w-0 flex-1 truncate pr-3">
                   {template.label || '未命名テンプレート'}
                 </span>
+                {template.isDefault ? (
+                  <span className="inline-flex shrink-0 items-center justify-center gap-1 rounded-full border border-transparent bg-indigo-500/90 px-[10px] py-1 text-[11px] font-semibold text-white shadow-[0_10px_24px_-18px_rgba(79,70,229,0.6)]">
+                    既定
+                  </span>
+                ) : null}
                 <span
                   className={`inline-flex items-center justify-center gap-1 rounded-full border border-transparent px-[10px] py-1 text-[11px] font-semibold ${
                     template.enabled

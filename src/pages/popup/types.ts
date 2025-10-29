@@ -1,6 +1,7 @@
 export interface TemplateOption {
   id: string;
   label: string;
+  isDefault: boolean;
 }
 
 export type {

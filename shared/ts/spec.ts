@@ -17,6 +17,7 @@ export interface SharedTemplateSpec {
     readonly temporaryChat: boolean;
     readonly model: string;
     readonly customModel?: string;
+    readonly default?: boolean;
   }[];
 }
 

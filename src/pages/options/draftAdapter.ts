@@ -26,6 +26,7 @@ export const settingsAdapter = {
     const sanitizedTemplates: TemplateSettings[] = draft.templates.map(
       (template) => ({
         ...template,
+        isDefault: Boolean(template.isDefault),
         label: template.label.trim(),
         url: template.url.trim(),
         queryTemplate: template.queryTemplate,
@@ -60,6 +61,18 @@ export function ensureTemplateSelection(
   );
   if (hasSelected) {
     return selectedTemplateId;
+  }
+  const enabledTemplates = draft.templates.filter(
+    (template) => template.enabled,
+  );
+  const defaultTemplate =
+    enabledTemplates.find((template) => template.isDefault) ??
+    draft.templates.find((template) => template.isDefault);
+  if (defaultTemplate) {
+    return defaultTemplate.id;
+  }
+  if (enabledTemplates[0]) {
+    return enabledTemplates[0].id;
   }
   return draft.templates[0]?.id ?? null;
 }

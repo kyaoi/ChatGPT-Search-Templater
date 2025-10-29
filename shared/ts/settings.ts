@@ -21,8 +21,13 @@ export interface TemplateSettings {
   hintsSearch: boolean;
   temporaryChat: boolean;
   model: TemplateModelOption;
+  isDefault: boolean;
   customModel?: string;
 }
+
+type TemplateSource = Partial<TemplateSettings> & {
+  default?: boolean;
+};
 
 export interface ExtensionSettings {
   templates: TemplateSettings[];
@@ -46,6 +51,10 @@ export function isTemplateModelOption(
 }
 
 const DEFAULT_TEMPLATE_BLUEPRINT = sharedSpec.defaultTemplates[0];
+const BLUEPRINT_IS_DEFAULT =
+  typeof DEFAULT_TEMPLATE_BLUEPRINT?.default === 'boolean'
+    ? DEFAULT_TEMPLATE_BLUEPRINT.default
+    : false;
 
 const TEMPLATE_BLUEPRINT: Omit<TemplateSettings, 'id'> = {
   label: DEFAULT_TEMPLATE_BLUEPRINT?.label ?? '標準検索',
@@ -56,6 +65,7 @@ const TEMPLATE_BLUEPRINT: Omit<TemplateSettings, 'id'> = {
   hintsSearch: DEFAULT_TEMPLATE_BLUEPRINT?.hintsSearch ?? false,
   temporaryChat: DEFAULT_TEMPLATE_BLUEPRINT?.temporaryChat ?? false,
   model: (DEFAULT_TEMPLATE_BLUEPRINT?.model ?? 'gpt-5') as TemplateModelOption,
+  isDefault: BLUEPRINT_IS_DEFAULT,
   customModel: DEFAULT_TEMPLATE_BLUEPRINT?.customModel,
 };
 
@@ -73,7 +83,7 @@ function createTemplateFallback(): TemplateSettings {
 }
 
 function sanitizeTemplate(
-  template: Partial<TemplateSettings> | undefined,
+  template: TemplateSource | undefined,
   fallback: TemplateSettings,
 ): TemplateSettings {
   const source = template ?? {};
@@ -118,6 +128,16 @@ function sanitizeTemplate(
       ? source.id.trim()
       : fallback.id;
 
+  const isDefault = (() => {
+    if (typeof source.isDefault === 'boolean') {
+      return source.isDefault;
+    }
+    if (typeof source.default === 'boolean') {
+      return source.default;
+    }
+    return fallback.isDefault ?? false;
+  })();
+
   const normalized: TemplateSettings = {
     id: idCandidate,
     label,
@@ -127,6 +147,7 @@ function sanitizeTemplate(
     hintsSearch,
     temporaryChat,
     model,
+    isDefault,
   };
 
   if (customModelValue && customModelValue.length > 0) {
@@ -163,7 +184,7 @@ export function generateTemplateId(): string {
 }
 
 export function createTemplateDefaults(
-  overrides?: Partial<TemplateSettings>,
+  overrides?: TemplateSource,
 ): TemplateSettings {
   const fallback = createTemplateFallback();
 
@@ -200,20 +221,58 @@ export function createTemplateDefaults(
         delete fallback.customModel;
       }
     }
+    const overrideDefault =
+      typeof overrides.isDefault === 'boolean'
+        ? overrides.isDefault
+        : typeof overrides.default === 'boolean'
+          ? overrides.default
+          : undefined;
+    if (typeof overrideDefault === 'boolean') {
+      fallback.isDefault = overrideDefault;
+    }
   }
 
   return sanitizeTemplate(undefined, fallback);
 }
 
-export const DEFAULT_TEMPLATES: TemplateSettings[] =
-  sharedSpec.defaultTemplates.map((template) =>
-    createTemplateDefaults({
-      ...template,
-      model: isTemplateModelOption(template.model)
-        ? template.model
-        : TEMPLATE_BLUEPRINT.model,
-    }),
+function enforceDefaultTemplate(
+  templates: TemplateSettings[],
+): TemplateSettings[] {
+  if (templates.length === 0) {
+    return templates;
+  }
+
+  let defaultIndex = templates.findIndex(
+    (template) => template.isDefault && template.enabled,
   );
+  if (defaultIndex === -1) {
+    defaultIndex = templates.findIndex((template) => template.isDefault);
+  }
+  if (defaultIndex === -1) {
+    defaultIndex = templates.findIndex((template) => template.enabled);
+  }
+  if (defaultIndex === -1) {
+    defaultIndex = 0;
+  }
+
+  return templates.map((template, index) => ({
+    ...template,
+    isDefault: index === defaultIndex,
+  }));
+}
+
+const DEFAULT_TEMPLATE_LIST = sharedSpec.defaultTemplates.map((template) =>
+  createTemplateDefaults({
+    ...template,
+    model: isTemplateModelOption(template.model)
+      ? template.model
+      : TEMPLATE_BLUEPRINT.model,
+  }),
+);
+
+export const DEFAULT_TEMPLATES: TemplateSettings[] = enforceDefaultTemplate(
+  DEFAULT_TEMPLATE_LIST,
+);
 
 export const DEFAULT_SETTINGS: ExtensionSettings = {
   templates: DEFAULT_TEMPLATES.map((template) => ({ ...template })),
@@ -229,7 +288,7 @@ export function getTemplateById(
 }
 
 export function enrichTemplate(
-  template: Partial<TemplateSettings>,
+  template: TemplateSource,
   fallbackId: string,
   index: number,
 ): TemplateSettings {
@@ -239,7 +298,7 @@ export function enrichTemplate(
 }
 
 function normalizeTemplates(
-  templates: Partial<TemplateSettings>[] | undefined,
+  templates: TemplateSource[] | undefined,
 ): TemplateSettings[] {
   if (!Array.isArray(templates) || templates.length === 0) {
     return DEFAULT_TEMPLATES.map((template) => ({ ...template }));
@@ -247,7 +306,7 @@ function normalizeTemplates(
 
   const seenIds = new Set<string>();
 
-  return templates.map((template, index) => {
+  const normalizedTemplates = templates.map((template, index) => {
     const fallback = DEFAULT_TEMPLATES[index] ?? createTemplateDefaults();
     const normalized = sanitizeTemplate(template, fallback);
 
@@ -285,6 +344,8 @@ function normalizeTemplates(
 
     return withId;
   });
+
+  return enforceDefaultTemplate(normalizedTemplates);
 }
 
 export function normalizeSettings(
@@ -300,7 +361,9 @@ export function normalizeSettings(
       ? raw.parentMenuTitle.trim()
       : DEFAULT_PARENT_MENU_TITLE;
 
-  const templates = normalizeTemplates(raw?.templates);
+  const templates = normalizeTemplates(
+    raw?.templates as TemplateSource[] | undefined,
+  );
 
   return {
     hardLimit,

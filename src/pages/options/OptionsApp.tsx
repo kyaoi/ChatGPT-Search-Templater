@@ -21,6 +21,7 @@ export function OptionsApp(): JSX.Element {
     handleTemplateAdd,
     handleTemplateRemove,
     handleTemplateSelect,
+    handleTemplateSetDefault,
     handleFieldChange,
     handleImportClick,
     handleImportFileChange,
@@ -67,6 +68,7 @@ export function OptionsApp(): JSX.Element {
                         handleTemplateChange(selectedTemplate.id, updater)
                       }
                       onRemove={handleTemplateRemove}
+                      onSetDefault={handleTemplateSetDefault}
                     />
                   ) : (
                     <div className="rounded-[24px] border border-dashed border-[rgba(129,140,248,0.6)] bg-[rgba(255,255,255,0.5)] p-9 text-center text-[14px] text-[#475569]">

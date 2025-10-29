@@ -8,12 +8,14 @@ interface TemplateEditorProps {
   template: TemplateDraft;
   onChange: (updater: TemplateUpdater) => void;
   onRemove: (templateId: string) => void;
+  onSetDefault: (templateId: string) => void;
 }
 
 export function TemplateEditor({
   template,
   onChange,
   onRemove,
+  onSetDefault,
 }: TemplateEditorProps): JSX.Element {
   const preview = useMemo(() => templatePreview(template), [template]);
 
@@ -54,6 +56,14 @@ export function TemplateEditor({
           </h3>
         </div>
         <div className="flex items-center gap-3">
+          <button
+            type="button"
+            className={`inline-flex items-center justify-center gap-2 rounded-full border px-3 py-1.5 text-xs font-semibold transition duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-400 ${template.isDefault ? 'border-transparent bg-indigo-500/90 text-white shadow-[0_12px_24px_-18px_rgba(79,70,229,0.7)]' : 'border-[rgba(129,140,248,0.5)] bg-white/80 text-[#334155] hover:border-indigo-400/70 hover:text-indigo-500'}`}
+            onClick={() => onSetDefault(template.id)}
+            disabled={template.isDefault}
+          >
+            {template.isDefault ? '既定テンプレート' : '既定に設定'}
+          </button>
           <label className="inline-flex items-center gap-[10px] text-sm text-[#334155]">
             <input
               type="checkbox"

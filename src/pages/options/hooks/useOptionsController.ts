@@ -40,6 +40,38 @@ interface OptionsControllerState {
   loadingError: string | null;
 }
 
+function ensureSingleDraftDefault(
+  templates: TemplateDraft[],
+  preferredId?: string | null,
+): TemplateDraft[] {
+  if (templates.length === 0) {
+    return templates;
+  }
+
+  let defaultIndex = templates.findIndex((template) => template.isDefault);
+
+  if (preferredId) {
+    const preferredIndex = templates.findIndex(
+      (template) => template.id === preferredId,
+    );
+    if (preferredIndex !== -1) {
+      defaultIndex = preferredIndex;
+    }
+  }
+
+  if (defaultIndex === -1) {
+    const firstEnabledIndex = templates.findIndex(
+      (template) => template.enabled,
+    );
+    defaultIndex = firstEnabledIndex !== -1 ? firstEnabledIndex : 0;
+  }
+
+  return templates.map((template, index) => ({
+    ...template,
+    isDefault: index === defaultIndex,
+  }));
+}
+
 export function useOptionsController(): {
   draft: SettingsDraft | null;
   selectedTemplateId: string | null;
@@ -66,6 +98,7 @@ export function useOptionsController(): {
   handleExport: () => void;
   handleSubmit: (event?: FormEvent<HTMLFormElement>) => Promise<void>;
   handleReset: () => Promise<void>;
+  handleTemplateSetDefault: (templateId: string) => void;
 } {
   const [state, setState] = useState<OptionsControllerState>({
     draft: null,
@@ -90,10 +123,14 @@ export function useOptionsController(): {
           return;
         }
         const draft = settingsAdapter.toDraft(settings);
+        const normalizedDraft: SettingsDraft = {
+          ...draft,
+          templates: ensureSingleDraftDefault(draft.templates),
+        };
         setState((current) => ({
           ...current,
-          draft,
-          selectedTemplateId: ensureTemplateSelection(draft, null),
+          draft: normalizedDraft,
+          selectedTemplateId: ensureTemplateSelection(normalizedDraft, null),
           isLoading: false,
           dirty: false,
           statusMessage: '',
@@ -143,7 +180,12 @@ export function useOptionsController(): {
         );
         return {
           ...current,
-          draft: nextDraft,
+          draft: nextDraft
+            ? {
+                ...nextDraft,
+                templates: ensureSingleDraftDefault(nextDraft.templates),
+              }
+            : nextDraft,
         };
       });
       markDirty();
@@ -161,9 +203,13 @@ export function useOptionsController(): {
       if (!current.draft) {
         return current;
       }
+      const nextTemplates = ensureSingleDraftDefault([
+        ...current.draft.templates,
+        draftTemplate,
+      ]);
       const nextDraft: SettingsDraft = {
         ...current.draft,
-        templates: [...current.draft.templates, draftTemplate],
+        templates: nextTemplates,
       };
       return {
         ...current,
@@ -188,9 +234,10 @@ export function useOptionsController(): {
           return current;
         }
 
+        const normalizedTemplates = ensureSingleDraftDefault(nextTemplates);
         const nextDraft: SettingsDraft = {
           ...current.draft,
-          templates: nextTemplates,
+          templates: normalizedTemplates,
         };
         const nextSelected = ensureTemplateSelection(
           nextDraft,
@@ -221,6 +268,41 @@ export function useOptionsController(): {
     [patchState],
   );
 
+  const handleTemplateSetDefault = useCallback(
+    (templateId: string) => {
+      patchState((current) => {
+        if (!current.draft) {
+          return current;
+        }
+        const templates = ensureSingleDraftDefault(
+          current.draft.templates,
+          templateId,
+        ).map((template) =>
+          template.id === templateId
+            ? {
+                ...template,
+                enabled: true,
+              }
+            : template,
+        );
+        const nextDraft: SettingsDraft = {
+          ...current.draft,
+          templates,
+        };
+        return {
+          ...current,
+          draft: nextDraft,
+          selectedTemplateId: ensureTemplateSelection(
+            nextDraft,
+            current.selectedTemplateId,
+          ),
+        };
+      });
+      markDirty();
+    },
+    [markDirty, patchState],
+  );
+
   const handleFieldChange = useCallback(
     (key: 'hardLimit' | 'parentMenuTitle', value: string) => {
       patchState((current) => {
@@ -248,7 +330,14 @@ export function useOptionsController(): {
 
     try {
       const normalized = settingsAdapter.fromDraft(draft);
-      const data = JSON.stringify(normalized, null, 2);
+      const exportData = {
+        ...normalized,
+        templates: normalized.templates.map(({ isDefault, ...rest }) => ({
+          ...rest,
+          default: isDefault,
+        })),
+      };
+      const data = JSON.stringify(exportData, null, 2);
       const blob = new Blob([data], { type: 'application/json' });
       const url = URL.createObjectURL(blob);
       const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
@@ -295,11 +384,15 @@ export function useOptionsController(): {
           parsed as Partial<ExtensionSettings>,
         );
         const nextDraft = settingsAdapter.toDraft(normalized);
+        const normalizedDraft: SettingsDraft = {
+          ...nextDraft,
+          templates: ensureSingleDraftDefault(nextDraft.templates),
+        };
 
         patchState((current) => ({
           ...current,
-          draft: nextDraft,
-          selectedTemplateId: ensureTemplateSelection(nextDraft, null),
+          draft: normalizedDraft,
+          selectedTemplateId: ensureTemplateSelection(normalizedDraft, null),
           dirty: true,
           statusMessage: '設定をインポートしました。保存して適用してください。',
           loadingError: null,
@@ -349,11 +442,15 @@ export function useOptionsController(): {
       try {
         await saveSettings(normalized);
         const nextDraft = settingsAdapter.toDraft(normalized);
+        const normalizedDraft: SettingsDraft = {
+          ...nextDraft,
+          templates: ensureSingleDraftDefault(nextDraft.templates),
+        };
         patchState((current) => ({
           ...current,
-          draft: nextDraft,
+          draft: normalizedDraft,
           selectedTemplateId: ensureTemplateSelection(
-            nextDraft,
+            normalizedDraft,
             current.selectedTemplateId,
           ),
           dirty: false,
@@ -394,10 +491,14 @@ export function useOptionsController(): {
       const normalizedDefaults = normalizeSettings(DEFAULT_SETTINGS);
       await saveSettings(normalizedDefaults);
       const defaultDraft = settingsAdapter.toDraft(normalizedDefaults);
+      const normalizedDraft: SettingsDraft = {
+        ...defaultDraft,
+        templates: ensureSingleDraftDefault(defaultDraft.templates),
+      };
       patchState((current) => ({
         ...current,
-        draft: defaultDraft,
-        selectedTemplateId: ensureTemplateSelection(defaultDraft, null),
+        draft: normalizedDraft,
+        selectedTemplateId: ensureTemplateSelection(normalizedDraft, null),
         dirty: false,
         statusMessage: '初期設定に戻しました。',
         loadingError: null,
@@ -441,6 +542,7 @@ export function useOptionsController(): {
     handleTemplateAdd,
     handleTemplateRemove,
     handleTemplateSelect,
+    handleTemplateSetDefault,
     handleFieldChange,
     handleImportClick,
     handleImportFileChange,

@@ -52,6 +52,7 @@ function cloneTemplate(template: TemplateSettings): TemplateSettings {
     hintsSearch: template.hintsSearch,
     temporaryChat: template.temporaryChat,
     model: template.model,
+    isDefault: template.isDefault,
     customModel: template.customModel,
   };
 }
@@ -265,6 +266,14 @@ function findTemplateById(
   return settings.templates.find((template) => template.id === templateId);
 }
 
+function findDefaultTemplate(
+  settings: ExtensionSettings,
+): TemplateSettings | undefined {
+  return settings.templates.find(
+    (template) => template.isDefault && template.enabled,
+  );
+}
+
 async function bootstrap(): Promise<void> {
   currentSettings = await ensureDefaults();
   await enqueueContextMenuUpdate(currentSettings);
@@ -325,6 +334,40 @@ chrome.contextMenus.onClicked.addListener(
     })();
   },
 );
+
+chrome.commands.onCommand.addListener((command) => {
+  if (command !== 'execute-default-template') {
+    return;
+  }
+  void (async () => {
+    const [activeTab] = await chrome.tabs.query({
+      active: true,
+      lastFocusedWindow: true,
+    });
+    const tabId = activeTab?.id;
+    const defaultTemplate = findDefaultTemplate(currentSettings);
+    if (!defaultTemplate) {
+      await showAlertOnTab(
+        tabId,
+        '既定テンプレートが設定されていません。オプションページで設定してください。',
+      );
+      return;
+    }
+
+    const selectionText = await resolveSelectionText(tabId, '');
+    if (!selectionText) {
+      await showAlertOnTab(tabId, 'テキストを選択してから実行してください。');
+      return;
+    }
+
+    await executeTemplate(
+      defaultTemplate,
+      selectionText,
+      currentSettings.hardLimit,
+      tabId,
+    );
+  })();
+});
 
 chrome.runtime.onMessage.addListener(
   (

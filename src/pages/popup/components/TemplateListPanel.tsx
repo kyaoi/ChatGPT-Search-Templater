@@ -45,6 +45,11 @@ export function TemplateListPanel({
               aria-pressed={active}
             >
               <span className="truncate">{template.label}</span>
+              {template.isDefault ? (
+                <span className="inline-flex shrink-0 items-center justify-center rounded-full bg-white/80 px-2 py-0.5 text-[10px] font-semibold text-[#334155] shadow-sm">
+                  既定
+                </span>
+              ) : null}
             </button>
           );
         })}
@@ -69,7 +74,7 @@ export function TemplateListPanel({
             <button
               type="button"
               key={`pill-${template.id}`}
-              className={`shrink-0 rounded-full border border-transparent px-4 py-2 text-xs font-semibold transition duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-400 ${
+              className={`inline-flex items-center gap-2 shrink-0 rounded-full border border-transparent px-4 py-2 text-xs font-semibold transition duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-400 ${
                 active
                   ? 'bg-[linear-gradient(135deg,rgba(129,140,248,0.9),rgba(56,189,248,0.8))] text-white shadow-[0_10px_24px_-18px_rgba(99,102,241,0.7)]'
                   : 'bg-white/80 text-[#334155] shadow-sm hover:border-[rgba(129,140,248,0.5)] hover:text-[#0f172a]'
@@ -79,6 +84,11 @@ export function TemplateListPanel({
               aria-pressed={active}
             >
               <span className="whitespace-nowrap">{template.label}</span>
+              {template.isDefault ? (
+                <span className="ml-2 inline-flex shrink-0 items-center justify-center rounded-full bg-indigo-500/90 px-2 py-[2px] text-[10px] font-semibold text-white">
+                  既定
+                </span>
+              ) : null}
             </button>
           );
         })}

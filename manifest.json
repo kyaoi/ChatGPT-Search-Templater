@@ -27,5 +27,14 @@
       "js": ["content-script.js"],
       "run_at": "document_idle"
     }
-  ]
+  ],
+  "commands": {
+    "execute-default-template": {
+      "description": "選択テキストを既定テンプレートで検索",
+      "suggested_key": {
+        "default": "Ctrl+Shift+Y",
+        "mac": "Command+Shift+Y"
+      }
+    }
+  }
 }
