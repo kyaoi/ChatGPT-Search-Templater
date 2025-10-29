@@ -1,66 +1,63 @@
-# ChatGPT Search Templater (Chrome Extension)
+# ChatGPT Search Templater
 
-選択テキストをテンプレート URL に挿入して **chatgpt.com** を開く Manifest v3 対応の Chrome 拡張です。
+**ChatGPT Search Templater** is a Chrome extension that allows you to take selected text from a webpage, embed it into a predefined template, and open it on `chatgpt.com`.
 
-## リポジトリ構成
+It provides a flexible way to manage multiple search templates, enabling you to quickly perform searches with ChatGPT tailored to your needs.
 
-```text
-chrome-extension/
-├─ manifest.json
-├─ options.html
-├─ popup.html
-├─ scripts/
-│  └─ prebuild.mjs
-├─ src/
-│  ├─ background/        # メニュー作成・クリックハンドラ・URL組み立て
-│  ├─ content-script/
-│  ├─ pages/options/     # テンプレート編集 UI
-│  └─ lib/               # URL ビルダーや設定処理
-└─ assets/
-   └─ icons/*            # 16/32/48/128px
-```
+## Key Features
 
-テンプレート仕様や URL ビルダーなどの共通ロジックは `chrome-extension/shared/` に配置されています。TypeScript からは `@shared/*`（`shared/ts/*`）として参照します。
+- **Template-Based Searching**: Opens `chatgpt.com` by inserting selected text into a template URL, such as `https://chatgpt.com/?q={TEXT}`.
+- **Manage Multiple Templates**:
+  - Add, edit, and delete templates through the options page.
+  - Configure settings for each template, including the ChatGPT model (`gpt-4o`, `gpt-5`, etc.), whether to use hint-based searching, and temporary chat options.
+- **Easy Access**:
+  - Select and execute templates from the extension's popup.
+  - Run searches directly from the right-click context menu.
+  - Use a keyboard shortcut (`Ctrl+Shift+Y` / `Cmd+Shift+Y`) to quickly execute the default template.
 
-## セットアップとビルド
+## How to Use
 
-```bash
-pnpm install
-pnpm build    # TypeScript の型チェック + bundling
-pnpm lint     # Biome による静的解析
-```
+1.  **Select Text**: Highlight any text on a webpage.
+2.  **Execute Search**:
+    -   **Popup**: Click the extension icon and choose your desired template from the popup list.
+    -   **Right-Click**: Right-click on the selected text and choose a template from the context menu.
+    -   **Shortcut**: Press `Ctrl+Shift+Y` (or `Command+Shift+Y` on Mac) to run the search with your default template.
+3.  **Open in ChatGPT**: A new tab will open `chatgpt.com` with the URL generated from your template.
 
-## 機能概要
+## Configuration
 
-1. ページ内の文字列を選択して右クリック。
-2. コンテキストメニューからテンプレートを選択。
-3. テンプレートに選択文字列を挿入し、`chatgpt.com` を新規タブで開きます。
+1.  Right-click the extension icon and select "Options."
+2.  The options page will open, allowing you to:
+    -   **Manage Templates**: Create new templates or edit/delete existing ones.
+    -   **Set a Default Template**: Choose the default template to be used with shortcuts.
+    -   **Edit Context Menu**: Manage the items that appear in the right-click menu.
 
-テンプレートはオプションページから最大 2 件まで保存でき、URL のプレースホルダー（`{TEXT}` / `{選択した文字列}`）やチェックボックスによるクエリ付与（`hints=search`、`temporary-chat=true` など）、モデル選択などをサポートします。
+## Installation
 
-## 文字列と URL 長の扱い
+(Link to the Chrome Web Store or manual installation instructions will go here.)
 
-- 選択テキストは改行や空白、記号を含めてそのままエンコードします。
-- URL へ埋め込む際は `encodeURIComponent` を使用します。
-- エンコード後の URL 長が `HARD_LIMIT`（デフォルト 3000 文字）を超える場合はアラートを表示し、検索を中断します。
+## How to Build
 
-## 開発版のインストール手順
+Follow these steps to build the extension for development:
 
-1. リポジトリをクローンまたはダウンロードします。
-2. `pnpm build` でバンドルしたのち、Chrome で `chrome://extensions/` を開きます。
-3. デベロッパーモードを ON にし、「パッケージ化されていない拡張機能を読み込む」から `chrome-extension/` を選択します。
+1.  **Clone the Repository**:
+    ```bash
+    git clone https://github.com/your-username/chatgpt-search-templater.git
+    cd chatgpt-search-templater
+    ```
 
-## 付与する権限
+2.  **Install Dependencies**:
+    ```bash
+    pnpm install
+    ```
 
-- `permissions`: `contextMenus`, `storage`, `tabs`, `scripting`
-- `host_permissions`: `<all_urls>`（選択テキスト取得フォールバックで `chrome.scripting` を利用）
+3.  **Build the Extension**:
+    ```bash
+    pnpm build
+    ```
+    The built files will be generated in the `dist` directory.
 
-## 既知の注意点
-
-- `chatgpt.com` のクエリは非公式のため将来的に変更される可能性があります。
-- 一部ページ（`chrome://`、Chrome ウェブストア、PDF ビューワなど）では選択テキストを取得できない場合があります。
-- 非 ASCII 文字や改行が多い場合は URL 長が伸びやすく、HARD_LIMIT を超えることがあります。
-
-## ライセンス
-
-TBD（例：MIT）。
+4.  **Load into Chrome**:
+    -   Open Chrome and navigate to `chrome://extensions`.
+    -   Enable "Developer mode."
+    -   Click "Load unpacked" and select the `dist` directory.
