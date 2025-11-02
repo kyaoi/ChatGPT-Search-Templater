@@ -1,61 +1,44 @@
 import type { ExecuteTemplateOverrides } from '@shared/messages.js';
-import type {
-  TemplateModelOption,
-  TemplateSettings,
-} from '@shared/settings.js';
+import type { TemplateModelOption } from '@shared/settings.js';
 import { sharedSpec } from '@shared/spec.js';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { executeTemplate } from '../../../lib/runtimeMessaging.js';
-import { loadSettings } from '../../../lib/storage.js';
 
 interface UsePickerControllerParams {
   initialText: string;
-  initialTemplateId?: string;
 }
 
 interface PickerState {
-  templates: TemplateSettings[];
-  selectedTemplateId: string;
   text: string;
+  templateUrl: string;
+  queryTemplate: string;
   hintsSearch: boolean;
   temporaryChat: boolean;
   modelOption: TemplateModelOption;
   customModel: string;
   statusMessage: string;
-  isLoading: boolean;
   isSubmitting: boolean;
 }
 
-const DEFAULT_MODEL: TemplateModelOption = 'gpt-5';
-
-function resolveInitialTemplate(
-  templates: TemplateSettings[],
-  preferredId?: string,
-): TemplateSettings | undefined {
-  if (preferredId) {
-    const byPreferred = templates.find(
-      (template) => template.id === preferredId,
-    );
-    if (byPreferred) {
-      return byPreferred;
-    }
-  }
-  const byDefault = templates.find((template) => template.isDefault);
-  if (byDefault) {
-    return byDefault;
-  }
-  return templates[0];
-}
+const BLUEPRINT = sharedSpec.defaultTemplates[0];
+const DEFAULT_TEMPLATE_URL = BLUEPRINT?.url ?? sharedSpec.defaultTemplateUrl;
+const DEFAULT_QUERY_TEMPLATE =
+  BLUEPRINT?.queryTemplate ?? sharedSpec.defaultQueryTemplate;
+const DEFAULT_HINTS_SEARCH = BLUEPRINT?.hintsSearch ?? false;
+const DEFAULT_TEMPORARY_CHAT = BLUEPRINT?.temporaryChat ?? false;
+const DEFAULT_MODEL_OPTION = (BLUEPRINT?.model ??
+  'gpt-5') as TemplateModelOption;
+const DEFAULT_CUSTOM_MODEL = BLUEPRINT?.customModel ?? '';
 
 export function usePickerController({
   initialText,
-  initialTemplateId,
 }: UsePickerControllerParams): {
-  templates: TemplateSettings[];
-  selectedTemplateId: string;
   text: string;
   setText: (value: string) => void;
-  selectTemplate: (templateId: string) => void;
+  templateUrl: string;
+  setTemplateUrl: (value: string) => void;
+  queryTemplate: string;
+  setQueryTemplate: (value: string) => void;
   hintsSearch: boolean;
   setHintsSearch: (value: boolean) => void;
   temporaryChat: boolean;
@@ -64,94 +47,23 @@ export function usePickerController({
   setModelOption: (value: TemplateModelOption) => void;
   customModel: string;
   setCustomModel: (value: string) => void;
-  isLoading: boolean;
   isSubmitting: boolean;
   statusText: string;
-  hasTemplates: boolean;
   modelOptions: readonly TemplateModelOption[];
   submit: () => Promise<boolean>;
 } {
   const [state, setState] = useState<PickerState>({
-    templates: [],
-    selectedTemplateId: '',
     text: initialText,
-    hintsSearch: false,
-    temporaryChat: false,
-    modelOption: DEFAULT_MODEL,
-    customModel: '',
+    templateUrl: DEFAULT_TEMPLATE_URL,
+    queryTemplate: DEFAULT_QUERY_TEMPLATE,
+    hintsSearch: DEFAULT_HINTS_SEARCH,
+    temporaryChat: DEFAULT_TEMPORARY_CHAT,
+    modelOption: DEFAULT_MODEL_OPTION,
+    customModel: DEFAULT_CUSTOM_MODEL,
     statusMessage: '',
-    isLoading: true,
     isSubmitting: false,
   });
 
-  useEffect(() => {
-    let mounted = true;
-
-    const bootstrap = async () => {
-      try {
-        const settings = await loadSettings();
-        if (!mounted) {
-          return;
-        }
-
-        const enabledTemplates = settings.templates.filter(
-          (template) => template.enabled,
-        );
-
-        const initialTemplate = resolveInitialTemplate(
-          enabledTemplates,
-          initialTemplateId,
-        );
-
-        setState((current) => ({
-          ...current,
-          templates: enabledTemplates,
-          selectedTemplateId: initialTemplate?.id ?? '',
-          hintsSearch: initialTemplate?.hintsSearch ?? current.hintsSearch,
-          temporaryChat:
-            initialTemplate?.temporaryChat ?? current.temporaryChat,
-          modelOption: initialTemplate?.model ?? current.modelOption,
-          customModel:
-            initialTemplate?.model === 'custom'
-              ? (initialTemplate.customModel ?? '')
-              : '',
-          statusMessage:
-            enabledTemplates.length === 0
-              ? '有効なテンプレートがありません。オプションページで設定してください。'
-              : '',
-          isLoading: false,
-        }));
-      } catch (error) {
-        console.error(error);
-        if (mounted) {
-          setState((current) => ({
-            ...current,
-            statusMessage: '設定の読み込みに失敗しました。',
-            isLoading: false,
-          }));
-        }
-      }
-    };
-
-    void bootstrap();
-
-    return () => {
-      mounted = false;
-    };
-  }, [initialTemplateId]);
-
-  const templates = state.templates;
-  const selectedTemplateId = state.selectedTemplateId;
-  const text = state.text;
-  const hintsSearch = state.hintsSearch;
-  const temporaryChat = state.temporaryChat;
-  const modelOption = state.modelOption;
-  const customModel = state.customModel;
-  const isLoading = state.isLoading;
-  const isSubmitting = state.isSubmitting;
-  const statusMessage = state.statusMessage;
-
-  const hasTemplates = templates.length > 0;
   const modelOptions = useMemo(
     () => sharedSpec.templateModelOptions as readonly TemplateModelOption[],
     [],
@@ -165,29 +77,20 @@ export function usePickerController({
     }));
   }, []);
 
-  const selectTemplate = useCallback((templateId: string) => {
-    setState((current) => {
-      const template = current.templates.find(
-        (entry) => entry.id === templateId,
-      );
-      if (!template) {
-        return {
-          ...current,
-          selectedTemplateId: templateId,
-          statusMessage: '',
-        };
-      }
-      return {
-        ...current,
-        selectedTemplateId: templateId,
-        hintsSearch: template.hintsSearch,
-        temporaryChat: template.temporaryChat,
-        modelOption: template.model,
-        customModel:
-          template.model === 'custom' ? (template.customModel ?? '') : '',
-        statusMessage: '',
-      };
-    });
+  const setTemplateUrl = useCallback((value: string) => {
+    setState((current) => ({
+      ...current,
+      templateUrl: value,
+      statusMessage: '',
+    }));
+  }, []);
+
+  const setQueryTemplate = useCallback((value: string) => {
+    setState((current) => ({
+      ...current,
+      queryTemplate: value,
+      statusMessage: '',
+    }));
   }, []);
 
   const setHintsSearch = useCallback((value: boolean) => {
@@ -224,26 +127,8 @@ export function usePickerController({
   }, []);
 
   const submit = useCallback(async (): Promise<boolean> => {
-    if (!selectedTemplateId) {
-      setState((current) => ({
-        ...current,
-        statusMessage:
-          'テンプレートが選択できません。オプションから有効化してください。',
-      }));
-      return false;
-    }
-
-    const template = templates.find((entry) => entry.id === selectedTemplateId);
-    if (!template) {
-      setState((current) => ({
-        ...current,
-        statusMessage: 'テンプレートが見つかりません。',
-      }));
-      return false;
-    }
-
-    const trimmed = text.trim();
-    if (!trimmed) {
+    const trimmedQuery = state.text.trim();
+    if (!trimmedQuery) {
       setState((current) => ({
         ...current,
         statusMessage: 'クエリを入力してください。',
@@ -251,10 +136,27 @@ export function usePickerController({
       return false;
     }
 
-    const runtimeModel =
-      modelOption === 'custom' ? customModel.trim() : modelOption;
+    const trimmedTemplateUrl = state.templateUrl.trim();
+    if (!trimmedTemplateUrl) {
+      setState((current) => ({
+        ...current,
+        statusMessage: 'テンプレートURLを入力してください。',
+      }));
+      return false;
+    }
 
-    if (modelOption === 'custom' && runtimeModel.length === 0) {
+    const trimmedQueryTemplate = state.queryTemplate.trim();
+    if (!trimmedQueryTemplate) {
+      setState((current) => ({
+        ...current,
+        statusMessage: 'クエリテンプレートを入力してください。',
+      }));
+      return false;
+    }
+
+    const trimmedCustomModel =
+      state.modelOption === 'custom' ? state.customModel.trim() : '';
+    if (state.modelOption === 'custom' && trimmedCustomModel.length === 0) {
       setState((current) => ({
         ...current,
         statusMessage: 'カスタムモデル名を入力してください。',
@@ -262,11 +164,27 @@ export function usePickerController({
       return false;
     }
 
+    const inlineTemplate = {
+      url: trimmedTemplateUrl,
+      queryTemplate: trimmedQueryTemplate,
+      hintsSearch: state.hintsSearch,
+      temporaryChat: state.temporaryChat,
+      model: state.modelOption,
+      ...(state.modelOption === 'custom' && trimmedCustomModel.length > 0
+        ? { customModel: trimmedCustomModel }
+        : {}),
+    };
+
     const overrides: ExecuteTemplateOverrides = {
+      templateUrl: trimmedTemplateUrl,
+      queryTemplate: trimmedQueryTemplate,
       runtime: {
-        hintsSearch,
-        temporaryChat,
-        model: runtimeModel,
+        hintsSearch: state.hintsSearch,
+        temporaryChat: state.temporaryChat,
+        model:
+          state.modelOption === 'custom'
+            ? trimmedCustomModel
+            : state.modelOption,
       },
     };
 
@@ -277,13 +195,17 @@ export function usePickerController({
     }));
 
     try {
-      const response = await executeTemplate(template.id, trimmed, overrides);
+      const response = await executeTemplate({
+        text: trimmedQuery,
+        inlineTemplate,
+        overrides,
+      });
       if (!response.success) {
         const errorMessage =
           response.reason === 'hard-limit-exceeded'
             ? 'URLが長すぎるためキャンセルしました。'
             : response.reason === 'not-found'
-              ? 'テンプレートが見つかりません。'
+              ? '実行設定を準備できませんでした。'
               : '実行中に問題が発生しました。';
         setState((current) => ({
           ...current,
@@ -310,36 +232,27 @@ export function usePickerController({
         isSubmitting: false,
       }));
     }
-  }, [
-    selectedTemplateId,
-    templates,
-    text,
-    modelOption,
-    customModel,
-    hintsSearch,
-    temporaryChat,
-  ]);
+  }, [state]);
 
-  const statusText = isLoading ? '設定を読み込み中…' : statusMessage;
+  const statusText = state.statusMessage;
 
   return {
-    templates,
-    selectedTemplateId,
-    text,
+    text: state.text,
     setText,
-    selectTemplate,
-    hintsSearch,
+    templateUrl: state.templateUrl,
+    setTemplateUrl,
+    queryTemplate: state.queryTemplate,
+    setQueryTemplate,
+    hintsSearch: state.hintsSearch,
     setHintsSearch,
-    temporaryChat,
+    temporaryChat: state.temporaryChat,
     setTemporaryChat,
-    modelOption,
+    modelOption: state.modelOption,
     setModelOption,
-    customModel,
+    customModel: state.customModel,
     setCustomModel,
-    isLoading,
-    isSubmitting,
+    isSubmitting: state.isSubmitting,
     statusText,
-    hasTemplates,
     modelOptions,
     submit,
   };

@@ -1,4 +1,5 @@
 import type {
+  ExecuteTemplateInlineTemplate,
   ExecuteTemplateOverrides,
   ExecuteTemplateResponse,
   RuntimeMessage,
@@ -6,8 +7,10 @@ import type {
   SendResponse,
 } from '@shared/messages.js';
 import {
+  createTemplateDefaults,
   DEFAULT_SETTINGS,
   type ExtensionSettings,
+  isTemplateModelOption,
   resolveModelId,
   type TemplateSettings,
 } from '@shared/settings.js';
@@ -65,6 +68,79 @@ function snapshotSettings(settings: ExtensionSettings): ExtensionSettings {
     parentMenuTitle: settings.parentMenuTitle,
     templates: settings.templates.map((template) => cloneTemplate(template)),
   };
+}
+
+function composeExecutionTemplate(
+  baseTemplate: TemplateSettings | undefined,
+  inline?: ExecuteTemplateInlineTemplate,
+): TemplateSettings | undefined {
+  if (!baseTemplate && !inline) {
+    return undefined;
+  }
+
+  const template = baseTemplate
+    ? cloneTemplate(baseTemplate)
+    : createTemplateDefaults();
+
+  if (!baseTemplate) {
+    template.label = 'カスタム検索';
+  }
+
+  if (inline) {
+    const urlCandidate =
+      typeof inline.url === 'string' ? inline.url.trim() : '';
+    if (urlCandidate.length > 0) {
+      template.url = urlCandidate;
+    }
+
+    const queryCandidate =
+      typeof inline.queryTemplate === 'string' ? inline.queryTemplate : '';
+    if (queryCandidate.length > 0) {
+      template.queryTemplate = queryCandidate;
+    }
+
+    if (typeof inline.hintsSearch === 'boolean') {
+      template.hintsSearch = inline.hintsSearch;
+    }
+
+    if (typeof inline.temporaryChat === 'boolean') {
+      template.temporaryChat = inline.temporaryChat;
+    }
+
+    if (typeof inline.model === 'string' && inline.model.trim().length > 0) {
+      const trimmedModel = inline.model.trim();
+      if (isTemplateModelOption(trimmedModel)) {
+        template.model = trimmedModel;
+        if (trimmedModel === 'custom') {
+          const customValue = inline.customModel?.trim() ?? '';
+          if (customValue.length > 0) {
+            template.customModel = customValue;
+          } else {
+            delete template.customModel;
+          }
+        } else {
+          delete template.customModel;
+        }
+      } else {
+        const customValue = inline.customModel?.trim() ?? trimmedModel;
+        if (customValue.length > 0) {
+          template.model = 'custom';
+          template.customModel = customValue;
+        }
+      }
+    } else if (
+      typeof inline.customModel === 'string' &&
+      inline.customModel.trim().length > 0
+    ) {
+      template.model = 'custom';
+      template.customModel = inline.customModel.trim();
+    }
+  }
+
+  template.enabled = true;
+  template.isDefault = false;
+
+  return template;
 }
 
 function templateMenuId(templateId: string): string {
@@ -238,16 +314,12 @@ async function fetchSelectionViaScripting(
 
 interface PromptWindowParams {
   text?: string;
-  templateId?: string;
 }
 
 function openPromptWindow(params: PromptWindowParams): Promise<void> {
   const pickerUrl = new URL(chrome.runtime.getURL('picker.html'));
   if (params.text && params.text.length > 0) {
     pickerUrl.searchParams.set('text', params.text);
-  }
-  if (params.templateId && params.templateId.length > 0) {
-    pickerUrl.searchParams.set('templateId', params.templateId);
   }
 
   return new Promise((resolve) => {
@@ -271,6 +343,19 @@ async function executeTemplate(
   tabId?: number,
   overrides?: ExecuteTemplateOverrides,
 ): Promise<ExecuteTemplateResponse> {
+  const templateUrlOverride =
+    typeof overrides?.templateUrl === 'string'
+      ? overrides.templateUrl.trim()
+      : '';
+  const effectiveTemplateUrl =
+    templateUrlOverride.length > 0 ? templateUrlOverride : template.url;
+
+  const effectiveQueryTemplate =
+    typeof overrides?.queryTemplate === 'string' &&
+    overrides.queryTemplate.length > 0
+      ? overrides.queryTemplate
+      : template.queryTemplate;
+
   const runtimeOverrides = overrides?.runtime ?? {};
   const hintsSearch =
     typeof runtimeOverrides.hintsSearch === 'boolean'
@@ -288,8 +373,8 @@ async function executeTemplate(
       : resolveModelId(template);
 
   const { url } = buildChatGPTUrl({
-    templateUrl: template.url,
-    queryTemplate: template.queryTemplate,
+    templateUrl: effectiveTemplateUrl,
+    queryTemplate: effectiveQueryTemplate,
     rawText: selectionText,
     runtimeOptions: {
       hintsSearch,
@@ -360,12 +445,8 @@ chrome.contextMenus.onClicked.addListener(
       if (menuId === MENU_PROMPT_ID) {
         const fallbackText = info.selectionText ?? '';
         const selectionText = await resolveSelectionText(tab?.id, fallbackText);
-        const defaultTemplate =
-          findDefaultTemplate(currentSettings) ??
-          currentSettings.templates.find((template) => template.enabled);
         await openPromptWindow({
           text: selectionText,
-          templateId: defaultTemplate?.id,
         });
         return;
       }
@@ -441,19 +522,9 @@ chrome.commands.onCommand.addListener((command) => {
         lastFocusedWindow: true,
       });
       const tabId = activeTab?.id;
-      const defaultTemplate = findDefaultTemplate(currentSettings);
-      if (!defaultTemplate) {
-        await showAlertOnTab(
-          tabId,
-          '既定テンプレートが設定されていません。オプションページで設定してください。',
-        );
-        return;
-      }
-
       const selectionText = await resolveSelectionText(tabId, '');
       await openPromptWindow({
         text: selectionText,
-        templateId: defaultTemplate.id,
       });
     })();
   }
@@ -466,15 +537,29 @@ chrome.runtime.onMessage.addListener(
     sendResponse: SendResponse<ExecuteTemplateResponse>,
   ) => {
     if (message?.type === 'execute-template') {
-      const template = findTemplateById(currentSettings, message.templateId);
-      if (!template) {
+      const templateId =
+        typeof message.templateId === 'string' &&
+        message.templateId.trim().length > 0
+          ? message.templateId.trim()
+          : undefined;
+
+      const storedTemplate = templateId
+        ? findTemplateById(currentSettings, templateId)
+        : undefined;
+
+      const executionTemplate = composeExecutionTemplate(
+        storedTemplate,
+        message.inlineTemplate,
+      );
+
+      if (!executionTemplate) {
         sendResponse({ success: false, reason: 'not-found' });
         return;
       }
 
       const originTabId = sender.tab?.id;
       executeTemplate(
-        template,
+        executionTemplate,
         message.text,
         currentSettings.hardLimit,
         originTabId,

@@ -13,6 +13,7 @@ It provides a flexible way to manage multiple search templates, enabling you to 
 - **Query Input Mode**:
   - Choose “Customize query…” from the context menu to adjust the query, model, and other options before opening ChatGPT.
   - Use the dedicated shortcut (default: `Ctrl+Shift+U` / `Cmd+Shift+U`) to open the same input dialog for the default template.
+  - Run fully ad-hoc searches by entering the template URL and query template on the fly—no need to edit saved templates.
 - **Easy Access**:
   - Select and execute templates from the extension's popup.
   - Run searches directly from the right-click context menu.

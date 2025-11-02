@@ -9,15 +9,9 @@ function bootstrap(): void {
 
   const searchParams = new URLSearchParams(window.location.search);
   const initialText = searchParams.get('text') ?? '';
-  const initialTemplateId = searchParams.get('templateId') ?? undefined;
 
   const root = createRoot(container);
-  root.render(
-    <PickerApp
-      initialText={initialText}
-      initialTemplateId={initialTemplateId}
-    />,
-  );
+  root.render(<PickerApp initialText={initialText} />);
 }
 
 document.addEventListener('DOMContentLoaded', bootstrap);

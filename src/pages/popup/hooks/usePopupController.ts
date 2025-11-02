@@ -163,7 +163,10 @@ export function usePopupController(): {
       }));
 
       try {
-        const response = await executeTemplate(effectiveTemplateId, trimmed);
+        const response = await executeTemplate({
+          templateId: effectiveTemplateId,
+          text: trimmed,
+        });
         if (!response.success) {
           const nextMessage =
             response.reason === 'hard-limit-exceeded'

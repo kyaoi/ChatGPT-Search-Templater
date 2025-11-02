@@ -1,8 +1,9 @@
 export interface ExecuteTemplateMessage {
   type: 'execute-template';
-  templateId: string;
+  templateId?: string;
   text: string;
   overrides?: ExecuteTemplateOverrides;
+  inlineTemplate?: ExecuteTemplateInlineTemplate;
 }
 
 export type ExecuteTemplateFailureReason =
@@ -19,6 +20,17 @@ export interface ExecuteTemplateRuntimeOverrides {
 
 export interface ExecuteTemplateOverrides {
   runtime?: ExecuteTemplateRuntimeOverrides;
+  templateUrl?: string;
+  queryTemplate?: string;
+}
+
+export interface ExecuteTemplateInlineTemplate {
+  url: string;
+  queryTemplate: string;
+  hintsSearch?: boolean;
+  temporaryChat?: boolean;
+  model?: string;
+  customModel?: string;
 }
 
 export interface ExecuteTemplateResponse {
