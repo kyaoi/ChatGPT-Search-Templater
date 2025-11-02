@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { executeTemplate } from '../../../lib/runtimeMessaging.js';
 import { loadSettings } from '../../../lib/storage.js';
-import { executeTemplate } from '../api.js';
 import type { TemplateOption } from '../types.js';
 
 interface PopupControllerState {

@@ -1,11 +1,13 @@
 import type {
   ExecuteTemplateMessage,
+  ExecuteTemplateOverrides,
   ExecuteTemplateResponse,
 } from '@shared/messages.js';
 
 export function executeTemplate(
   templateId: string,
   text: string,
+  overrides?: ExecuteTemplateOverrides,
 ): Promise<ExecuteTemplateResponse> {
   return new Promise((resolve, reject) => {
     const message: ExecuteTemplateMessage = {
@@ -13,6 +15,10 @@ export function executeTemplate(
       templateId,
       text,
     };
+
+    if (overrides) {
+      message.overrides = overrides;
+    }
 
     chrome.runtime.sendMessage(message, (response: ExecuteTemplateResponse) => {
       const runtimeError = chrome.runtime.lastError;

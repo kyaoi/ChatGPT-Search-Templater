@@ -35,6 +35,13 @@
         "default": "Ctrl+Shift+Y",
         "mac": "Command+Shift+Y"
       }
+    },
+    "execute-default-template-with-prompt": {
+      "description": "選択テキストを既定テンプレートで編集して検索",
+      "suggested_key": {
+        "default": "Ctrl+Shift+U",
+        "mac": "Command+Shift+U"
+      }
     }
   }
 }

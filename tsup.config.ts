@@ -6,6 +6,7 @@ export default defineConfig({
     'content-script': 'src/content-script/index.ts',
     options: 'src/pages/options/index.tsx',
     popup: 'src/pages/popup/index.tsx',
+    picker: 'src/pages/picker/index.tsx',
   },
   format: ['esm'],
   target: 'es2021',

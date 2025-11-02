@@ -1,4 +1,5 @@
 import type {
+  ExecuteTemplateOverrides,
   ExecuteTemplateResponse,
   RuntimeMessage,
   SelectionResponsePayload,
@@ -32,6 +33,7 @@ interface ScriptSelectionResult {
 
 const MENU_PARENT_ID = 'chatgpt-search-templater:parent';
 const MENU_EDIT_ID = 'chatgpt-search-templater:edit';
+const MENU_PROMPT_ID = 'chatgpt-search-templater:prompt';
 type ContextMenuContextList = [
   `${chrome.contextMenus.ContextType}`,
   ...`${chrome.contextMenus.ContextType}`[],
@@ -134,6 +136,13 @@ function regenerateContextMenus(settings: ExtensionSettings): Promise<void> {
     await Promise.all(templateMenus);
 
     await createMenu({
+      id: MENU_PROMPT_ID,
+      parentId: MENU_PARENT_ID,
+      title: 'クエリを入力して実行…',
+      contexts: SELECTION_CONTEXTS,
+    });
+
+    await createMenu({
       id: MENU_EDIT_ID,
       parentId: MENU_PARENT_ID,
       title: 'テンプレートを編集…',
@@ -227,20 +236,64 @@ async function fetchSelectionViaScripting(
   return null;
 }
 
+interface PromptWindowParams {
+  text?: string;
+  templateId?: string;
+}
+
+function openPromptWindow(params: PromptWindowParams): Promise<void> {
+  const pickerUrl = new URL(chrome.runtime.getURL('picker.html'));
+  if (params.text && params.text.length > 0) {
+    pickerUrl.searchParams.set('text', params.text);
+  }
+  if (params.templateId && params.templateId.length > 0) {
+    pickerUrl.searchParams.set('templateId', params.templateId);
+  }
+
+  return new Promise((resolve) => {
+    chrome.windows.create(
+      {
+        url: pickerUrl.toString(),
+        type: 'popup',
+        width: 520,
+        height: 640,
+        focused: true,
+      },
+      () => resolve(),
+    );
+  });
+}
+
 async function executeTemplate(
   template: TemplateSettings,
   selectionText: string,
   hardLimit: number,
   tabId?: number,
+  overrides?: ExecuteTemplateOverrides,
 ): Promise<ExecuteTemplateResponse> {
-  const runtimeModel = resolveModelId(template);
+  const runtimeOverrides = overrides?.runtime ?? {};
+  const hintsSearch =
+    typeof runtimeOverrides.hintsSearch === 'boolean'
+      ? runtimeOverrides.hintsSearch
+      : template.hintsSearch;
+  const temporaryChat =
+    typeof runtimeOverrides.temporaryChat === 'boolean'
+      ? runtimeOverrides.temporaryChat
+      : template.temporaryChat;
+
+  const runtimeModelCandidate = runtimeOverrides.model?.trim() ?? '';
+  const runtimeModel =
+    runtimeModelCandidate.length > 0
+      ? runtimeModelCandidate
+      : resolveModelId(template);
+
   const { url } = buildChatGPTUrl({
     templateUrl: template.url,
     queryTemplate: template.queryTemplate,
     rawText: selectionText,
     runtimeOptions: {
-      hintsSearch: template.hintsSearch,
-      temporaryChat: template.temporaryChat,
+      hintsSearch,
+      temporaryChat,
       model: runtimeModel,
     },
   });
@@ -304,6 +357,19 @@ chrome.contextMenus.onClicked.addListener(
         return;
       }
 
+      if (menuId === MENU_PROMPT_ID) {
+        const fallbackText = info.selectionText ?? '';
+        const selectionText = await resolveSelectionText(tab?.id, fallbackText);
+        const defaultTemplate =
+          findDefaultTemplate(currentSettings) ??
+          currentSettings.templates.find((template) => template.enabled);
+        await openPromptWindow({
+          text: selectionText,
+          templateId: defaultTemplate?.id,
+        });
+        return;
+      }
+
       const templateId = parseTemplateId(menuId);
       if (!templateId) {
         return;
@@ -336,37 +402,61 @@ chrome.contextMenus.onClicked.addListener(
 );
 
 chrome.commands.onCommand.addListener((command) => {
-  if (command !== 'execute-default-template') {
+  if (command === 'execute-default-template') {
+    void (async () => {
+      const [activeTab] = await chrome.tabs.query({
+        active: true,
+        lastFocusedWindow: true,
+      });
+      const tabId = activeTab?.id;
+      const defaultTemplate = findDefaultTemplate(currentSettings);
+      if (!defaultTemplate) {
+        await showAlertOnTab(
+          tabId,
+          '既定テンプレートが設定されていません。オプションページで設定してください。',
+        );
+        return;
+      }
+
+      const selectionText = await resolveSelectionText(tabId, '');
+      if (!selectionText) {
+        await showAlertOnTab(tabId, 'テキストを選択してから実行してください。');
+        return;
+      }
+
+      await executeTemplate(
+        defaultTemplate,
+        selectionText,
+        currentSettings.hardLimit,
+        tabId,
+      );
+    })();
     return;
   }
-  void (async () => {
-    const [activeTab] = await chrome.tabs.query({
-      active: true,
-      lastFocusedWindow: true,
-    });
-    const tabId = activeTab?.id;
-    const defaultTemplate = findDefaultTemplate(currentSettings);
-    if (!defaultTemplate) {
-      await showAlertOnTab(
-        tabId,
-        '既定テンプレートが設定されていません。オプションページで設定してください。',
-      );
-      return;
-    }
 
-    const selectionText = await resolveSelectionText(tabId, '');
-    if (!selectionText) {
-      await showAlertOnTab(tabId, 'テキストを選択してから実行してください。');
-      return;
-    }
+  if (command === 'execute-default-template-with-prompt') {
+    void (async () => {
+      const [activeTab] = await chrome.tabs.query({
+        active: true,
+        lastFocusedWindow: true,
+      });
+      const tabId = activeTab?.id;
+      const defaultTemplate = findDefaultTemplate(currentSettings);
+      if (!defaultTemplate) {
+        await showAlertOnTab(
+          tabId,
+          '既定テンプレートが設定されていません。オプションページで設定してください。',
+        );
+        return;
+      }
 
-    await executeTemplate(
-      defaultTemplate,
-      selectionText,
-      currentSettings.hardLimit,
-      tabId,
-    );
-  })();
+      const selectionText = await resolveSelectionText(tabId, '');
+      await openPromptWindow({
+        text: selectionText,
+        templateId: defaultTemplate.id,
+      });
+    })();
+  }
 });
 
 chrome.runtime.onMessage.addListener(
@@ -388,6 +478,7 @@ chrome.runtime.onMessage.addListener(
         message.text,
         currentSettings.hardLimit,
         originTabId,
+        message.overrides,
       )
         .then((result) => sendResponse(result))
         .catch(() =>

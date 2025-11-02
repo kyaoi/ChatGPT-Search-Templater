@@ -10,6 +10,9 @@ It provides a flexible way to manage multiple search templates, enabling you to 
 - **Manage Multiple Templates**:
   - Add, edit, and delete templates through the options page.
   - Configure settings for each template, including the ChatGPT model (`gpt-4o`, `gpt-5`, etc.), whether to use hint-based searching, and temporary chat options.
+- **Query Input Mode**:
+  - Choose “Customize query…” from the context menu to adjust the query, model, and other options before opening ChatGPT.
+  - Use the dedicated shortcut (default: `Ctrl+Shift+U` / `Cmd+Shift+U`) to open the same input dialog for the default template.
 - **Easy Access**:
   - Select and execute templates from the extension's popup.
   - Run searches directly from the right-click context menu.

@@ -11,7 +11,12 @@ async function prepareDist() {
   await rm(distDir, { recursive: true, force: true });
   await mkdir(distDir, { recursive: true });
 
-  const staticFiles = ['manifest.json', 'popup.html', 'options.html'];
+  const staticFiles = [
+    'manifest.json',
+    'popup.html',
+    'options.html',
+    'picker.html',
+  ];
   await Promise.all(
     staticFiles.map((item) =>
       cp(path.join(projectRoot, item), path.join(distDir, item)),

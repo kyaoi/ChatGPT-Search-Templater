@@ -2,6 +2,7 @@ export interface ExecuteTemplateMessage {
   type: 'execute-template';
   templateId: string;
   text: string;
+  overrides?: ExecuteTemplateOverrides;
 }
 
 export type ExecuteTemplateFailureReason =
@@ -9,6 +10,16 @@ export type ExecuteTemplateFailureReason =
   | 'not-found'
   | 'unexpected-error'
   | (string & {});
+
+export interface ExecuteTemplateRuntimeOverrides {
+  hintsSearch?: boolean;
+  temporaryChat?: boolean;
+  model?: string;
+}
+
+export interface ExecuteTemplateOverrides {
+  runtime?: ExecuteTemplateRuntimeOverrides;
+}
 
 export interface ExecuteTemplateResponse {
   success: boolean;

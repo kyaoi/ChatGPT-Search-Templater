@@ -22,7 +22,9 @@ export function KeyboardShortcutSection(): JSX.Element {
 
   return (
     <section className="flex flex-col gap-3 rounded-[24px] border border-[rgba(148,163,184,0.25)] bg-[rgba(255,255,255,0.6)] p-6 text-[#475569]">
-      <h3 className="text-lg font-bold text-[#334155]">キーボードショートカット</h3>
+      <h3 className="text-lg font-bold text-[#334155]">
+        キーボードショートカット
+      </h3>
       <div className="flex flex-col gap-2">
         {commands.map((command) => (
           <div key={command.name} className="flex items-center justify-between">
