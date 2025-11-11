@@ -115,7 +115,7 @@ export function TemplateEditor({
             type="text"
             data-field="url"
             className="w-full rounded-xl border border-[rgba(148,163,184,0.5)] bg-[rgba(255,255,255,0.8)] px-3.5 py-2.5 text-sm text-[#0f172a] shadow-[0_6px_18px_-12px_rgb(15_23_42/0.3)] transition duration-200 placeholder:text-[#64748b] focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30 disabled:cursor-not-allowed disabled:opacity-60"
-            placeholder="https://chatgpt.com/?q={TEXT}"
+            placeholder="https://chatgpt.com/?prompt={TEXT}"
             value={template.url}
             onChange={(event) =>
               onChange((current) => ({

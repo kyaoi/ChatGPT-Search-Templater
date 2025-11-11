@@ -81,7 +81,7 @@ export function PickerApp({ initialText }: PickerAppProps): JSX.Element {
               className="w-full rounded-xl border border-[rgba(148,163,184,0.45)] bg-white/90 px-3.5 py-2.5 text-sm text-[#0f172a] shadow-[0_10px_24px_-18px_rgb(15_23_42/0.35)] transition duration-200 placeholder:text-slate-400 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30 disabled:cursor-not-allowed disabled:opacity-60"
               value={templateUrl}
               onChange={(event) => setTemplateUrl(event.target.value)}
-              placeholder="https://chatgpt.com/?q={TEXT}"
+              placeholder="https://chatgpt.com/?prompt={TEXT}"
               spellCheck={false}
             />
             <p className="text-xs text-slate-500">

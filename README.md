@@ -6,7 +6,7 @@ It provides a flexible way to manage multiple search templates, enabling you to 
 
 ## Key Features
 
-- **Template-Based Searching**: Opens `chatgpt.com` by inserting selected text into a template URL, such as `https://chatgpt.com/?q={TEXT}`.
+- **Template-Based Searching**: Opens `chatgpt.com` by inserting selected text into a template URL, such as `https://chatgpt.com/?prompt=\{TEXT\}`.
 - **Manage Multiple Templates**:
   - Add, edit, and delete templates through the options page.
   - Configure settings for each template, including the ChatGPT model (`gpt-4o`, `gpt-5`, etc.), whether to use hint-based searching, and temporary chat options.
