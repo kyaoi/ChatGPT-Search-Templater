@@ -1,6 +1,6 @@
 import type { ExecuteTemplateOverrides } from '@shared/messages.js';
 import type { TemplateModelOption } from '@shared/settings.js';
-import { sharedSpec } from '@shared/spec.js';
+import { models, sharedSpec } from '@shared/spec.js';
 import { useCallback, useMemo, useState } from 'react';
 import { executeTemplate } from '../../../lib/runtimeMessaging.js';
 
@@ -27,7 +27,7 @@ const DEFAULT_QUERY_TEMPLATE =
 const DEFAULT_HINTS_SEARCH = BLUEPRINT?.hintsSearch ?? false;
 const DEFAULT_TEMPORARY_CHAT = BLUEPRINT?.temporaryChat ?? false;
 const DEFAULT_MODEL_OPTION = (BLUEPRINT?.model ??
-  'gpt-5') as TemplateModelOption;
+  models[0]) as TemplateModelOption;
 const DEFAULT_CUSTOM_MODEL = BLUEPRINT?.customModel ?? '';
 
 export function usePickerController({

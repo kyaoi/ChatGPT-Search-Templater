@@ -1,16 +1,11 @@
-import { sharedSpec } from './spec.js';
+import { models, sharedSpec } from './spec.js';
 import {
   DEFAULT_QUERY_TEMPLATE,
   DEFAULT_TEMPLATE_URL,
   hasPlaceholder,
 } from './urlBuilder.js';
 
-export type TemplateModelOption =
-  | 'gpt-4o'
-  | 'o3'
-  | 'gpt-5'
-  | 'gpt-5-thinking'
-  | 'custom';
+export type TemplateModelOption = (typeof models)[number];
 
 export interface TemplateSettings {
   id: string;
@@ -64,7 +59,8 @@ const TEMPLATE_BLUEPRINT: Omit<TemplateSettings, 'id'> = {
   enabled: DEFAULT_TEMPLATE_BLUEPRINT?.enabled ?? true,
   hintsSearch: DEFAULT_TEMPLATE_BLUEPRINT?.hintsSearch ?? false,
   temporaryChat: DEFAULT_TEMPLATE_BLUEPRINT?.temporaryChat ?? false,
-  model: (DEFAULT_TEMPLATE_BLUEPRINT?.model ?? 'gpt-5') as TemplateModelOption,
+  model: (DEFAULT_TEMPLATE_BLUEPRINT?.model ??
+    models[0]) as TemplateModelOption,
   isDefault: BLUEPRINT_IS_DEFAULT,
   customModel: DEFAULT_TEMPLATE_BLUEPRINT?.customModel,
 };

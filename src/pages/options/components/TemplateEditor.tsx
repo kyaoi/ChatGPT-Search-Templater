@@ -1,4 +1,5 @@
 import { isTemplateModelOption } from '@shared/settings.js';
+import { models } from '@shared/spec.js';
 import type { ChangeEvent, JSX } from 'react';
 import { useCallback, useMemo } from 'react';
 import { templatePreview } from '../draftAdapter.js';
@@ -189,11 +190,11 @@ export function TemplateEditor({
               }));
             }}
           >
-            <option value="gpt-4o">gpt-4o</option>
-            <option value="o3">o3</option>
-            <option value="gpt-5">gpt-5</option>
-            <option value="gpt-5-thinking">gpt-5-thinking</option>
-            <option value="custom">カスタム</option>
+            {models.map((model) => (
+              <option key={model} value={model}>
+                {model}
+              </option>
+            ))}
           </select>
         </label>
         <label
